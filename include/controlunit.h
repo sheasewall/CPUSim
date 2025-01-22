@@ -30,12 +30,16 @@ class ControlUnit {
     std::unordered_map<std::string, Register<int>*> val_reg_registry;
 
     ALU alu;
+    
+    std::string memory_file;
 
 public:
+    ControlUnit(std::string memory_file);
     ControlUnit();
     ~ControlUnit() {}
 
     void executeInstruction();
+    int peekValRegister(std::string reg);
     void printValRegisters();
     void run(unsigned int line_num);
     void run() { run(PC.getVal()); }

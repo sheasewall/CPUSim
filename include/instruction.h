@@ -9,8 +9,6 @@
 
 struct Instruction
 {
-    int opcode;
-
     virtual ~Instruction() {}
     virtual void execute() = 0;
 };
@@ -18,7 +16,7 @@ struct Instruction
 struct NoOp : Instruction
 {
     void execute() override {}
-    NoOp() { opcode = 0; }
+    NoOp() {}
 };
 
 struct Load : Instruction
@@ -31,12 +29,33 @@ struct Load : Instruction
         std::string sReg;
         ss >> value >> sReg;
         reg = val_reg_registry.at(sReg);
-        opcode = 1;
     }
-    Load(Register<int>* _reg, int _value) : reg(_reg), value(_value) { opcode = 1; }
+
+    Load(Register<int>* _reg, int _value) : reg(_reg), value(_value) {}
+
     void execute() override
     {
         reg->setVal(value);
+    }
+};
+
+struct Move : Instruction
+{
+    Register<int>* regS;
+    Register<int>* regD;
+
+    Move(std::istringstream& ss, std::unordered_map<std::string, Register<int>*> val_reg_registry)
+    {
+        std::string sRegS;
+        std::string sRegD;
+        ss >> sRegS >> sRegD;
+        regS = val_reg_registry.at(sRegS);
+        regD = val_reg_registry.at(sRegD);
+    }
+
+    void execute() override
+    {
+        regD->setVal(regS->getVal());
     }
 };
 
@@ -50,9 +69,8 @@ struct Add : Instruction
         std::string sReg;
         ss >> value >> sReg;
         reg = val_reg_registry.at(sReg);
-        opcode = 2;
     }
-    Add(Register<int>* _reg, int _value) : reg(_reg), value(_value) { opcode = 1; }
+    Add(Register<int>* _reg, int _value) : reg(_reg), value(_value) {}
     void execute() override
     {
         int reg_val = reg->getVal();
@@ -69,7 +87,6 @@ struct Jump : Instruction
     {
         ss >> address;
         PC = _PC;
-        opcode = 3;
     }
     void execute() override
     {
@@ -82,9 +99,7 @@ struct JumpIf : Jump
     Register<bool>* compare;
 
     JumpIf(std::istringstream& ss, Register<unsigned int>* PC, Register<bool>* _compare)
-        : Jump(ss, PC), compare(_compare)
-    {
-        opcode = 4;
+        : Jump(ss, PC), compare(_compare) {
     }
     void execute() override
     {
@@ -109,7 +124,6 @@ struct Comp : Instruction
         ss >> sReg1 >> sReg2;
         reg1 = val_reg_registry.at(sReg1);
         reg2 = val_reg_registry.at(sReg2);
-        opcode = 5;
     }
     void execute() override
     {
@@ -130,14 +144,13 @@ struct Write : Instruction
     std::string line_data;
     std::string memory_file;
 
-    Write() { opcode = 6; }
+    Write() {}
 
     Write(std::istringstream& ss, std::string _memory_file) : memory_file(_memory_file)
     {
         ss >> address;
         std::getline(ss, line_data);
         std::cout << line_data << std::endl;
-        opcode = 6;
     }
     void execute() override
     {
@@ -203,7 +216,6 @@ struct WriteFrom : Write
         }
 
         line_data = line;
-        opcode = 7;
     }
     void execute() override
     {

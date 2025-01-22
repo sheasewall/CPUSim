@@ -5,7 +5,7 @@ using AddReg = Register<unsigned int>;
 
 const std::string MEM_FILE = "../../../memory.txt";
 
-ControlUnit::ControlUnit() : A(), B(), PC(), sIR(), pIR(), alu()
+ControlUnit::ControlUnit(std::string memory_file) : A(), B(), C(), PC(), sIR(), pIR(), alu(), memory_file(memory_file)
 {
     PC.setVal(1);
 
@@ -16,11 +16,16 @@ ControlUnit::ControlUnit() : A(), B(), PC(), sIR(), pIR(), alu()
     readMemory();
 }
 
+ControlUnit::ControlUnit() : ControlUnit(MEM_FILE)
+{
+
+}
+
 void ControlUnit::readMemory()
 {
-    std::ifstream file(MEM_FILE);
+    std::ifstream file(memory_file);
     if (!file.is_open()) {
-        std::cerr << "Unable to open memory.txt" << std::endl;
+        std::cerr << "Unable to open " << memory_file << std::endl;
         return;
     }
 
@@ -66,6 +71,11 @@ void ControlUnit::executeInstruction()
     execute();
 }
 
+int ControlUnit::peekValRegister(std::string reg)
+{
+    return val_reg_registry.at(reg)->getVal();
+}
+
 void ControlUnit::fetch()
 {
     readMemory();
@@ -82,6 +92,10 @@ void ControlUnit::decode()
     if (opcode == "MOVVAL")
     {
         pIR.setVal(std::make_shared<Load>(Load(iss, val_reg_registry)));
+    }
+    else if (opcode == "MOVREG")
+    {
+        pIR.setVal(std::make_shared<Move>(Move(iss, val_reg_registry)));
     }
     else if (opcode == "ADDVAL")
     {

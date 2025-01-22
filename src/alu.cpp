@@ -8,7 +8,10 @@ int ALU::add(int a, int b)
 unsigned int ALU::addressOffset(unsigned int address, int offset)
 {
     int converted = 0;
-    if (address <= std::numeric_limits<int>::max()) {
+    if (address < 0) {
+        throw std::out_of_range("Address underflow.");
+    }
+    if (address < std::numeric_limits<int>::max()) {
         converted = static_cast<int>(address);
     }
     else {
