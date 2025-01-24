@@ -7,127 +7,128 @@
 #include <fstream>
 #include <iostream>
 
+using Reg = Register<int>*;
+
+struct Operand
+{
+    int val;
+    Reg reg;
+
+    Operand() {}
+
+    Operand(std::istringstream& ss, std::unordered_map<std::string, Register<int>*> val_reg_registry)
+    {
+        std::string source;
+        ss >> source;
+        try
+        {
+            val = std::stoi(source);
+            reg = nullptr;
+        }
+        catch (std::invalid_argument)
+        {
+            reg = val_reg_registry.at(source);
+        }
+    }
+
+    int getVal()
+    {
+        if (reg != nullptr)
+        {
+            return reg->getVal();
+        }
+        return val;
+    }
+};
+
 struct Instruction
 {
     virtual ~Instruction() {}
     virtual void execute() = 0;
 };
 
-struct NoOp : Instruction
+struct OperandInstruction : Instruction
 {
+    Operand operand;
+
+    OperandInstruction(std::istringstream& ss, std::unordered_map<std::string, Register<int>*> val_reg_registry)
+    {
+        operand = Operand(ss, val_reg_registry);
+    }
+};
+
+struct OperandAndRegInstruction : OperandInstruction
+{
+    // I want to alias this rather than copy it, but 
+    // using a & reference was incorrect usage
+    Operand leftOperand = operand;
+    Reg rightReg;
+
+    OperandAndRegInstruction(std::istringstream& ss, std::unordered_map<std::string, Register<int>*> val_reg_registry)
+        : OperandInstruction(ss, val_reg_registry)
+    {
+        std::string sRightReg;
+        ss >> sRightReg;
+        rightReg = val_reg_registry.at(sRightReg);
+    }
+};
+
+struct OperandAndOperandInstruction : OperandInstruction
+{
+    // Aliasing leftReg to OperandInstruction::reg
+    Operand& leftOperand = operand;
+    Operand rightOperand;
+
+    OperandAndOperandInstruction(std::istringstream& ss, std::unordered_map<std::string, Register<int>*> val_reg_registry)
+        : OperandInstruction(ss, val_reg_registry)
+    {
+        rightOperand = Operand(ss, val_reg_registry);
+    }
+};
+
+///
+
+struct DoNothing : Instruction
+{
+    DoNothing() {}
     void execute() override {}
-    NoOp() {}
 };
 
-struct Load : Instruction
+struct Move : OperandAndRegInstruction
 {
-    Register<int>* reg;
-    int value;
-
-    Load(std::istringstream& ss, std::unordered_map<std::string, Register<int>*> val_reg_registry)
-    {
-        std::string sReg;
-        ss >> value >> sReg;
-        reg = val_reg_registry.at(sReg);
-    }
-
-    Load(Register<int>* _reg, int _value) : reg(_reg), value(_value) {}
-
-    void execute() override
-    {
-        reg->setVal(value);
-    }
-};
-
-struct Move : Instruction
-{
-    Register<int>* regS;
-    Register<int>* regD;
-
     Move(std::istringstream& ss, std::unordered_map<std::string, Register<int>*> val_reg_registry)
-    {
-        std::string sRegS;
-        std::string sRegD;
-        ss >> sRegS >> sRegD;
-        regS = val_reg_registry.at(sRegS);
-        regD = val_reg_registry.at(sRegD);
+        : OperandAndRegInstruction(ss, val_reg_registry) {
     }
 
     void execute() override
     {
-        regD->setVal(regS->getVal());
+        rightReg->setVal(leftOperand.getVal());
     }
 };
 
-struct Add : Instruction
+struct Add : OperandAndRegInstruction
 {
-    Register<int>* reg;
-    int value;
-
     Add(std::istringstream& ss, std::unordered_map<std::string, Register<int>*> val_reg_registry)
-    {
-        std::string sReg;
-        ss >> value >> sReg;
-        reg = val_reg_registry.at(sReg);
+        : OperandAndRegInstruction(ss, val_reg_registry) {
     }
-    Add(Register<int>* _reg, int _value) : reg(_reg), value(_value) {}
+
     void execute() override
     {
-        int reg_val = reg->getVal();
-        reg->setVal(reg_val + value);
+        rightReg->setVal(leftOperand.getVal() + rightReg->getVal());
     }
 };
 
-struct Jump : Instruction
-{
-    unsigned int address;
-    Register<unsigned int>* PC;
-
-    Jump(std::istringstream& ss, Register<unsigned int>* _PC)
-    {
-        ss >> address;
-        PC = _PC;
-    }
-    void execute() override
-    {
-        PC->setVal(address);
-    }
-};
-
-struct JumpIf : Jump
+struct LessThanComp : OperandAndOperandInstruction
 {
     Register<bool>* compare;
 
-    JumpIf(std::istringstream& ss, Register<unsigned int>* PC, Register<bool>* _compare)
-        : Jump(ss, PC), compare(_compare) {
+    LessThanComp(std::istringstream& ss, std::unordered_map<std::string, Register<int>*> val_reg_registry, Register<bool>* _compare)
+        : OperandAndOperandInstruction(ss, val_reg_registry), compare(_compare) {
     }
+
     void execute() override
     {
-        if (compare->getVal())
-        {
-            Jump::execute();
-        }
-    }
-};
-
-struct Comp : Instruction
-{
-    Register<int>* reg1;
-    Register<int>* reg2;
-    Register<bool>* compare;
-
-    Comp(std::istringstream& ss, std::unordered_map<std::string, Register<int>*> val_reg_registry, Register<bool>* _compare)
-        : compare(_compare)
-    {
-        std::string sReg1;
-        std::string sReg2;
-        ss >> sReg1 >> sReg2;
-        reg1 = val_reg_registry.at(sReg1);
-        reg2 = val_reg_registry.at(sReg2);
-    }
-    void execute() override
-    {
-        if (reg1->getVal() == reg2->getVal())
+        if (leftOperand.getVal() < rightOperand.getVal())
         {
             compare->setVal(true);
         }
@@ -138,88 +139,172 @@ struct Comp : Instruction
     }
 };
 
-struct Write : Instruction
+struct JumpIf : OperandInstruction
 {
-    unsigned int address;
-    std::string line_data;
-    std::string memory_file;
+    Register<unsigned int>* PC;
+    Register<bool>* compare;
 
-    Write() {}
-
-    Write(std::istringstream& ss, std::string _memory_file) : memory_file(_memory_file)
-    {
-        ss >> address;
-        std::getline(ss, line_data);
-        std::cout << line_data << std::endl;
+    JumpIf(std::istringstream& ss, std::unordered_map<std::string, Register<int>*> val_reg_registry, Register<unsigned int>* _PC, Register<bool>* _compare)
+        : OperandInstruction(ss, val_reg_registry), PC(_PC), compare(_compare) {
     }
+
     void execute() override
     {
-        std::ifstream infile(memory_file);
-        std::stringstream buffer;
-        bool found = false;
-
-        if (infile.is_open())
-        {
-            std::string line;
-            while (std::getline(infile, line))
-            {
-                std::istringstream iss(line);
-                unsigned int lineNumber;
-                iss >> lineNumber;
-
-                if (lineNumber == address)
-                {
-                    buffer << address << line_data << "\n";
-                    found = true;
-                }
-                else
-                {
-                    buffer << line << "\n";
-                }
-            }
-            infile.close();
+        int val = operand.getVal();
+        if (val < 0) {
+            throw std::out_of_range("Jump address cannot be negative.");
         }
-
-        if (!found)
+        if (compare->getVal())
         {
-            buffer << address << line_data << "\n";
-        }
-
-        std::ofstream outfile(memory_file);
-        if (outfile.is_open())
-        {
-            outfile << buffer.str();
-            outfile.close();
+            PC->setVal(val);
         }
     }
 };
 
-struct WriteFrom : Write
+struct Write : OperandAndOperandInstruction
 {
-    Register<int>* reg;
+    std::string memory_file;
 
-    WriteFrom(std::istringstream& ss, std::string memory_file, std::unordered_map<std::string, Register<int>*> val_reg_registry)
-    {
-        std::string sReg;
-        ss >> sReg;
-        reg = val_reg_registry.at(sReg);
-
-        this->memory_file = memory_file;
-        ss >> address;
-        std::getline(ss, line_data);
-
-        std::string line = line_data;
-        size_t pos = line.find('%');
-        if (pos != std::string::npos)
-        {
-            line.replace(pos, 1, std::to_string(reg->getVal()));
-        }
-
-        line_data = line;
+    Write(std::istringstream& ss, std::unordered_map<std::string, Register<int>*> val_reg_registry, std::string _memory_file)
+        : OperandAndOperandInstruction(ss, val_reg_registry), memory_file(_memory_file) {
     }
+
     void execute() override
     {
-        Write::execute();
+        {
+            std::ifstream infile(memory_file);
+            std::stringstream buffer;
+            bool found = false;
+
+            if (infile.is_open())
+            {
+                std::string line;
+                while (std::getline(infile, line))
+                {
+                    std::istringstream iss(line);
+                    unsigned int lineNumber;
+                    iss >> lineNumber;
+
+                    if (lineNumber == leftOperand.getVal())
+                    {
+                        buffer << leftOperand.getVal() << " " << rightOperand.getVal() << "\n";
+                        found = true;
+                    }
+                    else
+                    {
+                        buffer << line << "\n";
+                    }
+                }
+                infile.close();
+            }
+
+            if (!found)
+            {
+                buffer << leftOperand.getVal() << " " << rightOperand.getVal() << "\n";
+            }
+
+            std::ofstream outfile(memory_file);
+            if (outfile.is_open())
+            {
+                outfile << buffer.str();
+                outfile.close();
+            }
+        }
+    };
+
+        // void execute() override
+        // {
+        //     std::fstream file(memory_file, std::ios::in | std::ios::out);
+        //     bool found = false;
+        //     std::streampos pos;
+
+        //     if (!file.is_open()) {
+        //         std::cerr << "Unable to open " << memory_file << std::endl;
+        //         return;
+        //     }
+
+        //     std::string line;
+        //     while (std::getline(file, line) && !found)
+        //     {
+        //         std::istringstream iss(line);
+        //         int lineNumber;
+        //         iss >> lineNumber;
+
+        //         int targetLineNumber = leftOperand.getVal();
+        //         int targetValue = rightOperand.getVal();
+
+        //         if (lineNumber == targetLineNumber)
+        //         {
+        //             found = true;
+        //             pos = file.tellg();
+        //             if (file.peek() == EOF) {
+        //                 file.clear();
+        //                 file.seekg(-std::streamoff(line.length()), std::ios::end);
+        //             }
+        //             else {
+        //                 file.seekg(pos - std::streamoff(line.length() + 1));
+        //             }
+        //             file << targetLineNumber << " " << targetValue;
+        //             file.flush();
+        //             break;
+        //         }
+        //     }
+
+        //     if (!found)
+        //     {
+        //         file.clear();
+        //         file.seekp(0, std::ios::end);
+        //         if (file.tellp() != std::streampos(0)) {
+        //             file << "\n";
+        //         }
+        //         file << leftOperand.getVal() << " " << rightOperand.getVal();
+        //     }
+
+        //     file.close();
+        // }
+};
+
+struct Read : OperandAndRegInstruction
+{
+    std::string memory_file;
+
+    Read(std::istringstream& ss, std::unordered_map<std::string, Register<int>*> val_reg_registry, std::string _memory_file)
+        : OperandAndRegInstruction(ss, val_reg_registry), memory_file(_memory_file) {
+    }
+
+    void execute() override
+    {
+        std::ifstream file(memory_file);
+        // When I read here, it scrambles my leftOperand
+        if (!file.is_open()) {
+            std::cerr << "Unable to open " << memory_file << std::endl;
+            return;
+        }
+
+        std::string line;
+        int targetLineNumber = leftOperand.getVal();
+        bool found = false;
+
+        while (std::getline(file, line) && !found)
+        {
+            std::istringstream iss(line);
+            int lineNumber;
+            iss >> lineNumber;
+
+            if (lineNumber == targetLineNumber)
+            {
+                int value;
+                iss >> value;
+                rightReg->setVal(value);
+                found = true;
+            }
+        }
+
+        if (!found)
+        {
+            throw std::out_of_range("Memory address not found.");
+        }
+        file.close();
     }
 };
 

@@ -34,12 +34,14 @@ class ControlUnit {
     std::string memory_file;
 
 public:
-    ControlUnit(std::string memory_file);
+    ControlUnit(std::string _memory_file);
     ControlUnit();
     ~ControlUnit() {}
 
     void executeInstruction();
     int peekValRegister(std::string reg);
+    bool peekCompRegister() { return compare.getVal(); }
+    int peekLineMemory(unsigned int line_num);
     void printValRegisters();
     void run(unsigned int line_num);
     void run() { run(PC.getVal()); }

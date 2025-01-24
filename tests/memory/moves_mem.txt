@@ -1,0 +1,5 @@
+1 MOVE 99 A
+2 MOVE A B 
+3 MOVE 11 B 
+4 MOVE B C 
+5 MOVE -1 C 

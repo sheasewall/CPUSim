@@ -5,7 +5,7 @@ using AddReg = Register<unsigned int>;
 
 const std::string MEM_FILE = "../../../memory.txt";
 
-ControlUnit::ControlUnit(std::string memory_file) : A(), B(), C(), PC(), sIR(), pIR(), alu(), memory_file(memory_file)
+ControlUnit::ControlUnit(std::string _memory_file) : A(), B(), C(), PC(), sIR(), pIR(), alu(), memory_file(_memory_file)
 {
     PC.setVal(1);
 
@@ -36,10 +36,21 @@ void ControlUnit::readMemory()
         iss >> lineNumber;
         std::string instruction;
         std::getline(iss, instruction);
-        memory[lineNumber] = instruction;
+        if (instruction != "") {
+            memory[lineNumber] = instruction;
+        }
     }
 
     file.close();
+}
+
+int ControlUnit::peekLineMemory(unsigned int line_num)
+{
+    std::string line = memory.at(line_num);
+    std::istringstream iss(line);
+    int val;
+    iss >> val;
+    return val;
 }
 
 void ControlUnit::printValRegisters()
@@ -89,43 +100,39 @@ void ControlUnit::decode()
     std::string opcode;
     iss >> opcode;
 
-    if (opcode == "MOVVAL")
+    if (opcode == "NOOP")
     {
-        pIR.setVal(std::make_shared<Load>(Load(iss, val_reg_registry)));
+        pIR.setVal(std::make_shared<DoNothing>(DoNothing()));
     }
-    else if (opcode == "MOVREG")
+    else if (opcode == "MOVE")
     {
         pIR.setVal(std::make_shared<Move>(Move(iss, val_reg_registry)));
     }
-    else if (opcode == "ADDVAL")
+    else if (opcode == "ADD")
     {
         pIR.setVal(std::make_shared<Add>(Add(iss, val_reg_registry)));
     }
-    else if (opcode == "JUMP")
+    else if (opcode == "COMP")
     {
-        pIR.setVal(std::make_shared<Jump>(Jump(iss, &PC)));
+        pIR.setVal(std::make_shared<LessThanComp>(LessThanComp(iss, val_reg_registry, &compare)));
     }
     else if (opcode == "JUMPIF")
     {
-        pIR.setVal(std::make_shared<JumpIf>(JumpIf(iss, &PC, &compare)));
-    }
-    else if (opcode == "COMP")
-    {
-        pIR.setVal(std::make_shared<Comp>(Comp(iss, val_reg_registry, &compare)));
+        pIR.setVal(std::make_shared<JumpIf>(JumpIf(iss, val_reg_registry, &PC, &compare)));
     }
     else if (opcode == "WRITE")
     {
-        pIR.setVal(std::make_shared<Write>(Write(iss, MEM_FILE)));
+        pIR.setVal(std::make_shared<Write>(Write(iss, val_reg_registry, memory_file)));
     }
-    else if (opcode == "WRITEFROM")
+    else if (opcode == "READ")
     {
-        pIR.setVal(std::make_shared<WriteFrom>(WriteFrom(iss, MEM_FILE, val_reg_registry)));
+        pIR.setVal(std::make_shared<Read>(Read(iss, val_reg_registry, memory_file)));
     }
-    else if (opcode == "NOOP")
-    {
-        pIR.setVal(std::make_shared<NoOp>());
-    }
-    else 
+    // else if (opcode == "WRITEFROM")
+    // {
+    //     pIR.setVal(std::make_shared<WriteFrom>(WriteFrom(iss, MEM_FILE, val_reg_registry)));
+    // }
+    else
     {
         throw std::runtime_error("Invalid opcode: " + opcode);
     }
