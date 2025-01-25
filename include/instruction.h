@@ -1,6 +1,8 @@
 #ifndef INSTRUCTION_H
 #define INSTRUCTION_H
 
+#include "fileiounit.hpp"
+
 #include <sstream>
 #include <unordered_map>
 #include <string>
@@ -161,150 +163,52 @@ struct JumpIf : OperandInstruction
     }
 };
 
-struct Write : OperandAndOperandInstruction
+struct Clear : OperandInstruction
 {
+    std::string memory_file;
+
+    Clear(std::istringstream& ss, std::unordered_map<std::string, Register<int>*> val_reg_registry, std::string _memory_file)
+        : OperandInstruction(ss, val_reg_registry), memory_file(_memory_file) {
+    }
+
+    void execute() override {
+        try {
+            FileIOUnit::clearLineFromFile(memory_file, operand.getVal());
+        } catch (const std::exception& e) {
+            std::cerr << e.what() << std::endl;
+        }
+    }
+};
+
+struct Write : OperandAndOperandInstruction {
     std::string memory_file;
 
     Write(std::istringstream& ss, std::unordered_map<std::string, Register<int>*> val_reg_registry, std::string _memory_file)
         : OperandAndOperandInstruction(ss, val_reg_registry), memory_file(_memory_file) {
     }
 
-    void execute() override
-    {
-        {
-            std::ifstream infile(memory_file);
-            std::stringstream buffer;
-            bool found = false;
-
-            if (infile.is_open())
-            {
-                std::string line;
-                while (std::getline(infile, line))
-                {
-                    std::istringstream iss(line);
-                    unsigned int lineNumber;
-                    iss >> lineNumber;
-
-                    if (lineNumber == leftOperand.getVal())
-                    {
-                        buffer << leftOperand.getVal() << " " << rightOperand.getVal() << "\n";
-                        found = true;
-                    }
-                    else
-                    {
-                        buffer << line << "\n";
-                    }
-                }
-                infile.close();
-            }
-
-            if (!found)
-            {
-                buffer << leftOperand.getVal() << " " << rightOperand.getVal() << "\n";
-            }
-
-            std::ofstream outfile(memory_file);
-            if (outfile.is_open())
-            {
-                outfile << buffer.str();
-                outfile.close();
-            }
+    void execute() override {
+        try {
+            FileIOUnit::writeLineToFile<int>(memory_file, leftOperand.getVal(), rightOperand.getVal());
+        } catch (const std::exception& e) {
+            std::cerr << e.what() << std::endl;
         }
-    };
-
-        // void execute() override
-        // {
-        //     std::fstream file(memory_file, std::ios::in | std::ios::out);
-        //     bool found = false;
-        //     std::streampos pos;
-
-        //     if (!file.is_open()) {
-        //         std::cerr << "Unable to open " << memory_file << std::endl;
-        //         return;
-        //     }
-
-        //     std::string line;
-        //     while (std::getline(file, line) && !found)
-        //     {
-        //         std::istringstream iss(line);
-        //         int lineNumber;
-        //         iss >> lineNumber;
-
-        //         int targetLineNumber = leftOperand.getVal();
-        //         int targetValue = rightOperand.getVal();
-
-        //         if (lineNumber == targetLineNumber)
-        //         {
-        //             found = true;
-        //             pos = file.tellg();
-        //             if (file.peek() == EOF) {
-        //                 file.clear();
-        //                 file.seekg(-std::streamoff(line.length()), std::ios::end);
-        //             }
-        //             else {
-        //                 file.seekg(pos - std::streamoff(line.length() + 1));
-        //             }
-        //             file << targetLineNumber << " " << targetValue;
-        //             file.flush();
-        //             break;
-        //         }
-        //     }
-
-        //     if (!found)
-        //     {
-        //         file.clear();
-        //         file.seekp(0, std::ios::end);
-        //         if (file.tellp() != std::streampos(0)) {
-        //             file << "\n";
-        //         }
-        //         file << leftOperand.getVal() << " " << rightOperand.getVal();
-        //     }
-
-        //     file.close();
-        // }
+    }
 };
 
-struct Read : OperandAndRegInstruction
-{
+struct Read : OperandAndRegInstruction {
     std::string memory_file;
 
     Read(std::istringstream& ss, std::unordered_map<std::string, Register<int>*> val_reg_registry, std::string _memory_file)
         : OperandAndRegInstruction(ss, val_reg_registry), memory_file(_memory_file) {
     }
 
-    void execute() override
-    {
-        std::ifstream file(memory_file);
-        // When I read here, it scrambles my leftOperand
-        if (!file.is_open()) {
-            std::cerr << "Unable to open " << memory_file << std::endl;
-            return;
+    void execute() override {
+        try {
+            rightReg->setVal(FileIOUnit::readLineFromFile(memory_file, leftOperand.getVal()));
+        } catch (const std::exception& e) {
+            std::cerr << e.what() << std::endl;
         }
-
-        std::string line;
-        int targetLineNumber = leftOperand.getVal();
-        bool found = false;
-
-        while (std::getline(file, line) && !found)
-        {
-            std::istringstream iss(line);
-            int lineNumber;
-            iss >> lineNumber;
-
-            if (lineNumber == targetLineNumber)
-            {
-                int value;
-                iss >> value;
-                rightReg->setVal(value);
-                found = true;
-            }
-        }
-
-        if (!found)
-        {
-            throw std::out_of_range("Memory address not found.");
-        }
-        file.close();
     }
 };
 

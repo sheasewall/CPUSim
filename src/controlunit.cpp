@@ -128,6 +128,10 @@ void ControlUnit::decode()
     {
         pIR.setVal(std::make_shared<Read>(Read(iss, val_reg_registry, memory_file)));
     }
+    else if (opcode == "CLEAR")
+    {
+        pIR.setVal(std::make_shared<Clear>(Clear(iss, val_reg_registry, memory_file)));
+    }
     // else if (opcode == "WRITEFROM")
     // {
     //     pIR.setVal(std::make_shared<WriteFrom>(WriteFrom(iss, MEM_FILE, val_reg_registry)));

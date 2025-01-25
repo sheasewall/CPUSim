@@ -118,78 +118,64 @@ TEST(ControlUnitTest, JumpIfs) {
     EXPECT_EQ(cu.peekValRegister("C"), 100);
 }
 
-TEST(ControlUnitTest, Writes) {
-    // Save the initial memory file
-    std::string memory_file_path = std::string(MEMORY_FILES_DIR) + "/writes_mem.txt";
-    std::ifstream src(memory_file_path, std::ios::binary);
-    std::ofstream dst(memory_file_path + ".bak", std::ios::binary);
+bool compareFiles(const std::string& p1, const std::string& p2) {
+    std::ifstream f1(p1, std::ifstream::binary | std::ifstream::ate);
+    std::ifstream f2(p2, std::ifstream::binary | std::ifstream::ate);
+
+    if (f1.fail() || f2.fail()) {
+        return false; //file problem
+    }
+
+    if (f1.tellg() != f2.tellg()) {
+        return false; //size mismatch
+    }
+
+    //seek back to beginning and use std::equal to compare contents
+    f1.seekg(0, std::ifstream::beg);
+    f2.seekg(0, std::ifstream::beg);
+    return std::equal(std::istreambuf_iterator<char>(f1.rdbuf()),
+        std::istreambuf_iterator<char>(),
+        std::istreambuf_iterator<char>(f2.rdbuf()));
+}
+
+void restoreMemoryFile(const std::string& memory_file_path) {
+    std::ifstream src(memory_file_path + ".bak", std::ios::binary);
+    std::ofstream dst(memory_file_path, std::ios::binary);
     dst << src.rdbuf();
     src.close();
     dst.close();
+}
 
+TEST(ControlUnitTest, Writes) {
+    std::string memory_file_path = std::string(MEMORY_FILES_DIR) + "/writes_mem.txt";
+    restoreMemoryFile(memory_file_path);
     ControlUnit cu(memory_file_path);
 
-    auto restore_memory_file = [&memory_file_path]() {
-        std::ifstream src(memory_file_path + ".bak", std::ios::binary);
-        std::ofstream dst(memory_file_path, std::ios::binary);
-        dst << src.rdbuf();
-        src.close();
-        dst.close();
-        };
-
-    // https://stackoverflow.com/questions/6163611/compare-two-files
-    auto compare_files = [](const std::string& p1, const std::string& p2) -> bool {
-        std::ifstream f1(p1, std::ifstream::binary | std::ifstream::ate);
-        std::ifstream f2(p2, std::ifstream::binary | std::ifstream::ate);
-
-        if (f1.fail() || f2.fail()) {
-            return false; //file problem
-        }
-
-        if (f1.tellg() != f2.tellg()) {
-            return false; //size mismatch
-        }
-
-        //seek back to beginning and use std::equal to compare contents
-        f1.seekg(0, std::ifstream::beg);
-        f2.seekg(0, std::ifstream::beg);
-        return std::equal(std::istreambuf_iterator<char>(f1.rdbuf()),
-            std::istreambuf_iterator<char>(),
-            std::istreambuf_iterator<char>(f2.rdbuf()));
-        };
-
-    try {
-        cu.executeInstruction();
-        cu.executeInstruction();
-        cu.executeInstruction();
-        cu.executeInstruction();
-        cu.executeInstruction();
-        cu.executeInstruction();
-        cu.executeInstruction();
-        cu.executeInstruction();
-        cu.executeInstruction();
-        EXPECT_TRUE(compare_files(memory_file_path, std::string(MEMORY_FILES_DIR) + "/writes_mem_ref1.txt"));
-        cu.executeInstruction();
-        cu.executeInstruction();
-        cu.executeInstruction();
-        cu.executeInstruction();
-        cu.executeInstruction();
-        cu.executeInstruction();
-        cu.executeInstruction();
-        cu.executeInstruction();
-        EXPECT_TRUE(compare_files(memory_file_path, std::string(MEMORY_FILES_DIR) + "/writes_mem_ref2.txt"));
-    }
-    catch (...) {
-        restore_memory_file();
-        FAIL() << "Exception thrown during execution";
-    }
-
-    // Restore the original memory file
-    restore_memory_file();
+    cu.executeInstruction();
+    cu.executeInstruction();
+    cu.executeInstruction();
+    cu.executeInstruction();
+    cu.executeInstruction();
+    cu.executeInstruction();
+    cu.executeInstruction();
+    cu.executeInstruction();
+    cu.executeInstruction();
+    EXPECT_TRUE(compareFiles(memory_file_path, std::string(MEMORY_FILES_DIR) + "/writes_mem_ref1.txt"));
+    cu.executeInstruction();
+    cu.executeInstruction();
+    cu.executeInstruction();
+    cu.executeInstruction();
+    cu.executeInstruction();
+    cu.executeInstruction();
+    cu.executeInstruction();
+    cu.executeInstruction();
+    EXPECT_TRUE(compareFiles(memory_file_path, std::string(MEMORY_FILES_DIR) + "/writes_mem_ref2.txt"));
 }
 
 TEST(ControlUnitTest, Reads) {
-    ControlUnit cu(std::string(MEMORY_FILES_DIR) + "/reads_mem.txt");
+    std::string memory_file_path = std::string(MEMORY_FILES_DIR) + "/reads_mem.txt";
+    ControlUnit cu(memory_file_path);
+
     cu.executeInstruction();
     EXPECT_EQ(cu.peekValRegister("A"), 1);
     cu.executeInstruction();
@@ -202,7 +188,10 @@ TEST(ControlUnitTest, Reads) {
 }
 
 TEST(ControlUnitTest, Fibs) {
-    ControlUnit cu(std::string(MEMORY_FILES_DIR) + "/fibs_mem.txt");
+    std::string memory_file_path = std::string(MEMORY_FILES_DIR) + "/fibs_mem.txt";
+    restoreMemoryFile(memory_file_path);
+    ControlUnit cu(memory_file_path);
+
     while (!cu.isHalted()) {
         cu.executeInstruction();
     }
@@ -216,4 +205,14 @@ TEST(ControlUnitTest, Fibs) {
     EXPECT_EQ(cu.peekLineMemory(10007), 55);
     EXPECT_EQ(cu.peekLineMemory(10008), 89);
     EXPECT_EQ(cu.peekLineMemory(10009), 144);
+}
+
+TEST(ControlUnitTest, WriteBlanks) {
+    std::string memory_file_path = std::string(MEMORY_FILES_DIR) + "/clears_mem.txt";
+    ControlUnit cu(memory_file_path);
+
+    cu.executeInstruction();
+    cu.executeInstruction();
+    cu.executeInstruction();
+    cu.executeInstruction();
 }
