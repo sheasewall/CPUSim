@@ -42,6 +42,7 @@ public:
     int peekValRegister(std::string reg);
     bool peekCompRegister() { return compare.getVal(); }
     int peekLineMemory(unsigned int line_num);
+    std::string peekLineMemoryStr(unsigned int line_num) { return memory.at(line_num).substr(1); }
     void printValRegisters();
     void run(unsigned int line_num);
     void run() { run(PC.getVal()); }

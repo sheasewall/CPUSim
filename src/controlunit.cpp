@@ -132,6 +132,10 @@ void ControlUnit::decode()
     {
         pIR.setVal(std::make_shared<Clear>(Clear(iss, val_reg_registry, memory_file)));
     }
+    else if (opcode == "APPEND")
+    {
+        pIR.setVal(std::make_shared<Append>(Append(iss, val_reg_registry, memory_file)));
+    }
     // else if (opcode == "WRITEFROM")
     // {
     //     pIR.setVal(std::make_shared<WriteFrom>(WriteFrom(iss, MEM_FILE, val_reg_registry)));
@@ -147,4 +151,8 @@ void ControlUnit::execute()
     // This ordering is impactful and should be assessed
     PC.setVal(PC.getVal() + 1);
     pIR.getVal()->execute();
+    // In theory, only a couple commands can change memory
+    // so we only need to reread memory after those commands
+    // Something more sophisticated should be done here
+    readMemory();
 }

@@ -216,3 +216,17 @@ TEST(ControlUnitTest, WriteBlanks) {
     cu.executeInstruction();
     cu.executeInstruction();
 }
+
+TEST(ControlUnitTest, Appends) {
+    std::string memory_file_path = std::string(MEMORY_FILES_DIR) + "/appends_mem.txt";
+    ControlUnit cu(memory_file_path);
+
+    cu.executeInstruction();
+    cu.executeInstruction();
+    cu.executeInstruction();
+    cu.executeInstruction();
+    cu.executeInstruction();
+    std::string line = cu.peekLineMemoryStr(100);
+    EXPECT_EQ("ABC", line);
+    cu.executeInstruction();
+}

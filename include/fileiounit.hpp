@@ -11,6 +11,8 @@ public:
     template <typename T>
     static void writeLineToFile(const std::string& filename, unsigned int lineNumber, T value);
     static void clearLineFromFile(const std::string& filename, unsigned int lineNumber);
+    template <typename T>
+    static void appendToFile(const std::string& filename, unsigned int lineNumber, const T to_append);
     static int readLineFromFile(const std::string& filename, unsigned int lineNumber);
 
 private:
@@ -72,6 +74,39 @@ inline void FileIOUnit::writeLineToFile(const std::string& filename, unsigned in
 
     if (!found) {
         buffer << lineNumber << " " << value << "\n";
+    }
+
+    file.close();
+    file.open(filename, std::ios::out | std::ios::trunc);
+    checkFileOpen(filename, file);
+    file << buffer.str();
+}
+
+template<typename T>
+inline void FileIOUnit::appendToFile(const std::string& filename, unsigned int lineNumber, const T to_append)
+{
+    std::fstream file(filename);
+    checkFileOpen(filename, file);
+
+    std::stringstream buffer;
+    bool found = false;
+
+    std::string line;
+    while (std::getline(file, line)) {
+        std::istringstream iss(line);
+        unsigned int currentLineNumber;
+        iss >> currentLineNumber;
+
+        if (currentLineNumber == lineNumber) {
+            buffer << line << to_append << "\n";
+            found = true;
+        } else {
+            buffer << line << "\n";
+        }
+    }
+
+    if (!found) {
+        buffer << lineNumber << " " << to_append << "\n";
     }
 
     file.close();

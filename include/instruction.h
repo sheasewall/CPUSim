@@ -212,4 +212,20 @@ struct Read : OperandAndRegInstruction {
     }
 };
 
+struct Append : OperandAndOperandInstruction {
+    std::string memory_file;
+
+    Append(std::istringstream& ss, std::unordered_map<std::string, Register<int>*> val_reg_registry, std::string _memory_file)
+        : OperandAndOperandInstruction(ss, val_reg_registry), memory_file(_memory_file) {
+    }
+
+    void execute() override {
+        try {
+            FileIOUnit::appendToFile<char>(memory_file, leftOperand.getVal(), char(rightOperand.getVal()));
+        } catch (const std::exception& e) {
+            std::cerr << e.what() << std::endl;
+        }
+    }
+};
+
 #endif // INSTRUCTION_H
