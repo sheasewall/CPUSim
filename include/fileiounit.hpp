@@ -14,6 +14,9 @@ public:
     template <typename T>
     static void appendToFile(const std::string& filename, unsigned int lineNumber, const T to_append);
     static int readLineFromFile(const std::string& filename, unsigned int lineNumber);
+    template<typename T>
+    static std::string readDataLine(const std::string& filename, unsigned int lineNumber);
+    static char destructiveRead(const std::string& filename, unsigned int lineNumber);
 
 private:
     static void checkFileOpen(const std::string& filename, std::fstream& file);
@@ -133,6 +136,62 @@ inline int FileIOUnit::readLineFromFile(const std::string& filename, unsigned in
     }
 
     throw std::out_of_range("Memory address not found: " + std::to_string(lineNumber));
+}
+
+inline char FileIOUnit::destructiveRead(const std::string& filename, unsigned int lineNumber)
+{
+    std::fstream file(filename);
+    checkFileOpen(filename, file);
+
+    std::stringstream buffer;
+    bool found = false;
+    char readChar;
+    unsigned int currentLineNumber = 1;
+
+    std::string line;
+    while (std::getline(file, line)) {
+        std::istringstream iss(line);
+
+        if (currentLineNumber == lineNumber) {
+            found = true;
+            readChar = line[0];
+            buffer << line.substr(1) << "\n";
+        } else {
+            buffer << line << "\n";
+        }
+        currentLineNumber++;
+    }
+
+    if (!found) {
+        throw std::out_of_range("Data line not found: " + std::to_string(lineNumber));
+    }
+
+    file.close();
+    file.open(filename, std::ios::out | std::ios::trunc);
+    checkFileOpen(filename, file);
+    file << buffer.str();
+
+    return readChar;
+}
+
+template<typename T>
+inline std::string FileIOUnit::readDataLine(const std::string& filename, unsigned int lineNumber)
+{
+    std::fstream file(filename);
+    checkFileOpen(filename, file);
+
+    std::stringstream buffer;
+    unsigned int currentLineNumber = 1;
+
+    std::string line;
+    while (std::getline(file, line)) {
+        if (currentLineNumber == lineNumber) {
+            return line;
+        }
+        currentLineNumber++;
+    }
+
+    throw std::out_of_range("Data line not found: " + std::to_string(lineNumber));
 }
 
 #endif // FILEIOUNIT_HPP

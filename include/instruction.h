@@ -141,13 +141,12 @@ struct LessThanComp : OperandAndOperandInstruction
     }
 };
 
-struct JumpIf : OperandInstruction
+struct Jump : OperandInstruction
 {
     Register<unsigned int>* PC;
-    Register<bool>* compare;
 
-    JumpIf(std::istringstream& ss, std::unordered_map<std::string, Register<int>*> val_reg_registry, Register<unsigned int>* _PC, Register<bool>* _compare)
-        : OperandInstruction(ss, val_reg_registry), PC(_PC), compare(_compare) {
+    Jump(std::istringstream& ss, std::unordered_map<std::string, Register<int>*> val_reg_registry, Register<unsigned int>* _PC)
+        : OperandInstruction(ss, val_reg_registry), PC(_PC) {
     }
 
     void execute() override
@@ -156,9 +155,23 @@ struct JumpIf : OperandInstruction
         if (val < 0) {
             throw std::out_of_range("Jump address cannot be negative.");
         }
+        PC->setVal(val);
+    }
+};
+
+struct JumpIf : Jump
+{
+    Register<bool>* compare;
+
+    JumpIf(std::istringstream& ss, std::unordered_map<std::string, Register<int>*> val_reg_registry, Register<unsigned int>* _PC, Register<bool>* _compare)
+        : Jump(ss, val_reg_registry, _PC), compare(_compare) {
+    }
+
+    void execute() override
+    {
         if (compare->getVal())
         {
-            PC->setVal(val);
+            Jump::execute();
         }
     }
 };
@@ -222,6 +235,22 @@ struct Append : OperandAndOperandInstruction {
     void execute() override {
         try {
             FileIOUnit::appendToFile<char>(memory_file, leftOperand.getVal(), char(rightOperand.getVal()));
+        } catch (const std::exception& e) {
+            std::cerr << e.what() << std::endl;
+        }
+    }
+};
+
+struct ReadChar : OperandAndRegInstruction {
+    std::string memory_file;
+
+    ReadChar(std::istringstream& ss, std::unordered_map<std::string, Register<int>*> val_reg_registry, std::string _memory_file)
+        : OperandAndRegInstruction(ss, val_reg_registry), memory_file(_memory_file) {
+    }
+
+    void execute() override {
+        try {
+            rightReg->setVal(int(FileIOUnit::destructiveRead(memory_file, leftOperand.getVal())));
         } catch (const std::exception& e) {
             std::cerr << e.what() << std::endl;
         }

@@ -1,4 +1,5 @@
 #include "controlunit.h"
+#include "fileiounit.hpp"
 
 using ValReg = Register<int>;
 using AddReg = Register<unsigned int>;
@@ -31,6 +32,9 @@ void ControlUnit::readMemory()
 
     std::string line;
     while (std::getline(file, line)) {
+        if (line == "" || line == "\n" || line[0] == '#') { 
+            continue;
+        }
         std::istringstream iss(line);
         unsigned int lineNumber;
         iss >> lineNumber;
@@ -51,6 +55,11 @@ int ControlUnit::peekLineMemory(unsigned int line_num)
     int val;
     iss >> val;
     return val;
+}
+
+std::string ControlUnit::peekDataLine(unsigned int line_num)
+{
+    return FileIOUnit::readDataLine<std::string>(memory_file, line_num);
 }
 
 void ControlUnit::printValRegisters()
@@ -116,6 +125,10 @@ void ControlUnit::decode()
     {
         pIR.setVal(std::make_shared<LessThanComp>(LessThanComp(iss, val_reg_registry, &compare)));
     }
+    else if (opcode == "JUMP")
+    {
+        pIR.setVal(std::make_shared<Jump>(Jump(iss, val_reg_registry, &PC)));
+    }
     else if (opcode == "JUMPIF")
     {
         pIR.setVal(std::make_shared<JumpIf>(JumpIf(iss, val_reg_registry, &PC, &compare)));
@@ -135,6 +148,10 @@ void ControlUnit::decode()
     else if (opcode == "APPEND")
     {
         pIR.setVal(std::make_shared<Append>(Append(iss, val_reg_registry, memory_file)));
+    }
+    else if (opcode == "READCHAR")
+    {
+        pIR.setVal(std::make_shared<ReadChar>(ReadChar(iss, val_reg_registry, memory_file)));
     }
     // else if (opcode == "WRITEFROM")
     // {
