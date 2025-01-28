@@ -13,6 +13,7 @@ class ControlUnit {
     Register<int> A;
     Register<int> B;
     Register<int> C;
+    Register<int> D;
 
     Register<bool> compare;
     // I should probably have a halt register

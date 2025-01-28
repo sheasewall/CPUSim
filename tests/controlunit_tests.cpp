@@ -9,7 +9,7 @@ TEST(ControlUnitTest, InitialRegVals) {
 }
 
 TEST(ControlUnitTest, NoOps) {
-    ControlUnit cu(std::string(MEMORY_FILES_DIR) + "/noops_mem.txt");
+    ControlUnit cu(std::string(MEMORY_FILES_DIR) + "/instructions/readonly/noops_mem.txt");
     cu.executeInstruction();
     cu.executeInstruction();
     cu.executeInstruction();
@@ -23,7 +23,7 @@ TEST(ControlUnitTest, NoOps) {
 }
 
 TEST(ControlUnitTest, Moves) {
-    ControlUnit cu(std::string(MEMORY_FILES_DIR) + "/moves_mem.txt");
+    ControlUnit cu(std::string(MEMORY_FILES_DIR) + "/instructions/readonly/moves_mem.txt");
     EXPECT_EQ(cu.peekValRegister("A"), 0);
     cu.executeInstruction();
     EXPECT_EQ(cu.peekValRegister("A"), 99);
@@ -44,7 +44,7 @@ TEST(ControlUnitTest, Moves) {
 }
 
 TEST(ControlUnitTest, Adds) {
-    ControlUnit cu(std::string(MEMORY_FILES_DIR) + "/adds_mem.txt");
+    ControlUnit cu(std::string(MEMORY_FILES_DIR) + "/instructions/readonly/adds_mem.txt");
     cu.executeInstruction();
     cu.executeInstruction();
     EXPECT_EQ(cu.peekValRegister("A"), 444);
@@ -58,8 +58,7 @@ TEST(ControlUnitTest, Adds) {
 }
 
 TEST(ControlUnitTest, Jumps) {
-    ControlUnit cu(std::string(MEMORY_FILES_DIR) + "/jumps_mem.txt");
-    cu.executeInstruction();
+    ControlUnit cu(std::string(MEMORY_FILES_DIR) + "/instructions/readonly/jumps_mem.txt");
     cu.executeInstruction();
     cu.executeInstruction();
     EXPECT_EQ(cu.peekValRegister("A"), 3);
@@ -76,7 +75,7 @@ TEST(ControlUnitTest, Jumps) {
 }
 
 TEST(ControlUnitTest, Comps) {
-    ControlUnit cu(std::string(MEMORY_FILES_DIR) + "/comps_mem.txt");
+    ControlUnit cu(std::string(MEMORY_FILES_DIR) + "/instructions/readonly/comps_mem.txt");
     cu.executeInstruction();
     cu.executeInstruction();
     cu.executeInstruction();
@@ -96,7 +95,7 @@ TEST(ControlUnitTest, Comps) {
 }
 
 TEST(ControlUnitTest, JumpIfs) {
-    ControlUnit cu(std::string(MEMORY_FILES_DIR) + "/jumpifs_mem.txt");
+    ControlUnit cu(std::string(MEMORY_FILES_DIR) + "/instructions/readonly/jumpifs_mem.txt");
     cu.executeInstruction();
     cu.executeInstruction();
     cu.executeInstruction();
@@ -147,7 +146,7 @@ void restoreMemoryFile(const std::string& memory_file_path) {
 }
 
 TEST(ControlUnitTest, Writes) {
-    std::string memory_file_path = std::string(MEMORY_FILES_DIR) + "/writes_mem.txt";
+    std::string memory_file_path = std::string(MEMORY_FILES_DIR) + "/instructions/writers/writes_mem.txt";
     restoreMemoryFile(memory_file_path);
     ControlUnit cu(memory_file_path);
 
@@ -160,7 +159,7 @@ TEST(ControlUnitTest, Writes) {
     cu.executeInstruction();
     cu.executeInstruction();
     cu.executeInstruction();
-    EXPECT_TRUE(compareFiles(memory_file_path, std::string(MEMORY_FILES_DIR) + "/writes_mem_ref1.txt"));
+    EXPECT_TRUE(compareFiles(memory_file_path, std::string(MEMORY_FILES_DIR) + "/instructions/writers/writes_mem_ref1.txt"));
     cu.executeInstruction();
     cu.executeInstruction();
     cu.executeInstruction();
@@ -169,11 +168,11 @@ TEST(ControlUnitTest, Writes) {
     cu.executeInstruction();
     cu.executeInstruction();
     cu.executeInstruction();
-    EXPECT_TRUE(compareFiles(memory_file_path, std::string(MEMORY_FILES_DIR) + "/writes_mem_ref2.txt"));
+    EXPECT_TRUE(compareFiles(memory_file_path, std::string(MEMORY_FILES_DIR) + "/instructions/writers/writes_mem_ref2.txt"));
 }
 
 TEST(ControlUnitTest, Reads) {
-    std::string memory_file_path = std::string(MEMORY_FILES_DIR) + "/reads_mem.txt";
+    std::string memory_file_path = std::string(MEMORY_FILES_DIR) + "/instructions/readonly/reads_mem.txt";
     ControlUnit cu(memory_file_path);
 
     cu.executeInstruction();
@@ -188,7 +187,7 @@ TEST(ControlUnitTest, Reads) {
 }
 
 TEST(ControlUnitTest, Fibs) {
-    std::string memory_file_path = std::string(MEMORY_FILES_DIR) + "/fibs_mem.txt";
+    std::string memory_file_path = std::string(MEMORY_FILES_DIR) + "/routines/writers/fibs_mem.txt";
     restoreMemoryFile(memory_file_path);
     ControlUnit cu(memory_file_path);
 
@@ -208,7 +207,7 @@ TEST(ControlUnitTest, Fibs) {
 }
 
 TEST(ControlUnitTest, WriteBlanks) {
-    std::string memory_file_path = std::string(MEMORY_FILES_DIR) + "/clears_mem.txt";
+    std::string memory_file_path = std::string(MEMORY_FILES_DIR) + "/instructions/writers/clears_mem.txt";
     ControlUnit cu(memory_file_path);
 
     cu.executeInstruction();
@@ -218,15 +217,82 @@ TEST(ControlUnitTest, WriteBlanks) {
 }
 
 TEST(ControlUnitTest, Appends) {
-    std::string memory_file_path = std::string(MEMORY_FILES_DIR) + "/appends_mem.txt";
+    std::string memory_file_path = std::string(MEMORY_FILES_DIR) + "/instructions/writers/appends_mem.txt";
+    restoreMemoryFile(memory_file_path);
     ControlUnit cu(memory_file_path);
 
     cu.executeInstruction();
     cu.executeInstruction();
     cu.executeInstruction();
     cu.executeInstruction();
+    std::string line = cu.peekDataLine(5);
+    EXPECT_EQ("10 ABC", line);
+}
+
+TEST(ControlUnitTest, ReadChars) {
+    std::string memory_file_path = std::string(MEMORY_FILES_DIR) + "/instructions/writers/read_chars_mem.txt";
+    restoreMemoryFile(memory_file_path);
+    ControlUnit cu(memory_file_path);
+
     cu.executeInstruction();
-    std::string line = cu.peekLineMemoryStr(100);
-    EXPECT_EQ("ABC", line);
+    EXPECT_EQ(cu.peekValRegister("A"), 72);
     cu.executeInstruction();
+    EXPECT_EQ(cu.peekValRegister("B"), 69);
+    cu.executeInstruction();
+    EXPECT_EQ(cu.peekValRegister("B"), 76);
+    std::string line = cu.peekDataLine(5);
+    EXPECT_EQ("LO", line);
+}
+
+TEST(ControlUnitTest, EqRoutine) {
+    std::string memory_file_path = std::string(MEMORY_FILES_DIR) + "/routines/readonly/eq_mem.txt";
+    ControlUnit cu(memory_file_path);
+
+    while (!cu.isHalted()) {
+        cu.executeInstruction();
+    }
+    EXPECT_EQ(cu.peekValRegister("C"), 1);
+}
+
+TEST(ControlUnitTest, NegRoutine) {
+    std::string memory_file_path = std::string(MEMORY_FILES_DIR) + "/routines/readonly/neg_mem.txt";
+    ControlUnit cu(memory_file_path);
+
+    while (!cu.isHalted()) {
+        cu.executeInstruction();
+    }
+    EXPECT_EQ(cu.peekValRegister("C"), 1);
+}
+
+TEST(ControlUnitTest, SubtractRoutine) {
+    std::string memory_file_path = std::string(MEMORY_FILES_DIR) + "/routines/writers/sub_mem.txt";
+    restoreMemoryFile(memory_file_path);
+    ControlUnit cu(memory_file_path);
+
+    while (!cu.isHalted()) {
+        cu.executeInstruction();
+    }
+    EXPECT_EQ(cu.peekValRegister("C"), 1);
+}
+
+TEST(ControlUnitTest, MulRoutine) {
+    std::string memory_file_path = std::string(MEMORY_FILES_DIR) + "/routines/writers/mul_mem.txt";
+    restoreMemoryFile(memory_file_path);
+    ControlUnit cu(memory_file_path);
+
+    while (!cu.isHalted()) {
+        cu.executeInstruction();
+    }
+    EXPECT_EQ(cu.peekValRegister("C"), 1);
+}
+
+TEST(ControlUnitTest, DivRoutine) {
+    std::string memory_file_path = std::string(MEMORY_FILES_DIR) + "/routines/writers/div_mem.txt";
+    restoreMemoryFile(memory_file_path);
+    ControlUnit cu(memory_file_path);
+
+    while (!cu.isHalted()) {
+        cu.executeInstruction();
+    }
+    EXPECT_EQ(cu.peekValRegister("C"), 1);
 }

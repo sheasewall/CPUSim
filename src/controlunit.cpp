@@ -6,13 +6,14 @@ using AddReg = Register<unsigned int>;
 
 const std::string MEM_FILE = "../../../memory.txt";
 
-ControlUnit::ControlUnit(std::string _memory_file) : A(), B(), C(), PC(), sIR(), pIR(), alu(), memory_file(_memory_file)
+ControlUnit::ControlUnit(std::string _memory_file) : A(), B(), C(), D(), PC(), sIR(), pIR(), alu(), memory_file(_memory_file)
 {
     PC.setVal(1);
 
     val_reg_registry["A"] = &A;
     val_reg_registry["B"] = &B;
     val_reg_registry["C"] = &C;
+    val_reg_registry["D"] = &D;
 
     readMemory();
 }
