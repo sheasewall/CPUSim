@@ -296,3 +296,14 @@ TEST(ControlUnitTest, DivRoutine) {
     }
     EXPECT_EQ(cu.peekValRegister("C"), 1);
 }
+
+TEST(ControlUnitTest, AddLinesRoutine) {
+    std::string memory_file_path = std::string(MEMORY_FILES_DIR) + "/routines/writers/add_line_nums_mem.txt";
+    restoreMemoryFile(memory_file_path);
+    ControlUnit cu(memory_file_path);
+
+    while (!cu.isHalted()) {
+        cu.executeInstruction();
+    }
+    EXPECT_EQ(cu.peekValRegister("C"), 1);
+}

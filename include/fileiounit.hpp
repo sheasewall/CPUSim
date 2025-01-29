@@ -154,8 +154,13 @@ inline char FileIOUnit::destructiveRead(const std::string& filename, unsigned in
 
         if (currentLineNumber == lineNumber) {
             found = true;
-            readChar = line[0];
-            buffer << line.substr(1) << "\n";
+            if (line == "") {
+                readChar = 10;
+            }
+            else {
+                readChar = line[0];
+                buffer << line.substr(1) << "\n";
+            }
         } else {
             buffer << line << "\n";
         }
