@@ -1,10 +1,9 @@
 #ifndef CONTROLUNIT_H
 #define CONTROLUNIT_H
 
-#include "register.h"
-#include "instruction.h"
 #include "alu.h"
 #include "riscinstructions.h"
+#include "immgen.h"
 #include "registerfile.h"
 #include "memoryfile.h"
 #include "instructionfile.h"
@@ -13,54 +12,34 @@
 #include <fstream>
 #include <sstream>
 
-// Pipeline registers definitions
-struct IFID {
-    std::bitset<32> instruction;
-    std::bitset<32> pc;
-};
-
-struct IDEX {
-    std::bitset<32> pc;
-    // std::bitset<32> imm;
-    // std::bitset<32> reg1_data;
-    // std::bitset<32> reg2_data;
-    // std::bitset<5> write_reg_address;
-    std::unique_ptr<RISC::RISCInstruction> p_instruction;
-};
-
-struct EXMEM {
-    std::bitset<32> result;
-    std::bitset<32> reg2;
-    std::bitset<32> jump_target;
-    std::bitset<5> write_reg;
-};
-
-struct MEMWB {
-    std::bitset<32> result;
-    std::bitset<32> read_data;
-    std::bitset<5> write_reg;
-};
-
 class ControlUnit {
-    std::bitset<32> pc;
+private:
+    unsigned long cycles;
 
-    InstructionMemory instruction_memory;
-    IFID if_id;
-    RegisterFile register_file;
-    IDEX id_ex;
-    ALU alu;
-    EXMEM ex_mem;
-    DataMemory data_memory;
-    MEMWB mem_wb;
+    std::bitset<32> pc;
+    std::bitset<32> current_instruction;
+    std::shared_ptr<RISC::Instruction> p_current_instruction;
+
+    std::shared_ptr<InstructionMemory> p_instruction_memory;
+    std::shared_ptr<ImmGen> p_imm_gen;
+    std::shared_ptr<RegisterFile> p_reg_file;
+    std::shared_ptr<ALU> p_alu;
+    std::shared_ptr<DataMemory> p_data_mem;
 
 public:
-    ControlUnit(std::string memory_file, std::string instruction_file, std::string data_file)
-        : instruction_memory(instruction_file), data_memory(data_file) {
+    ControlUnit(std::string instruction_file, std::string data_file) {
+        cycles = 0;
         pc = std::bitset<32>(0);
+        p_instruction_memory = std::make_shared<InstructionMemory>(instruction_file);
+        p_imm_gen = std::make_shared<ImmGen>();
+        p_reg_file = std::make_shared<RegisterFile>();
+        p_alu = std::make_shared<ALU>();
+        p_data_mem = std::make_shared<DataMemory>(data_file);
     }
     ~ControlUnit() {}
 
     void step();
+    void print();
 
 private:
     void fetch();

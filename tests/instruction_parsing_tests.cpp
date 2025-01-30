@@ -1,5 +1,7 @@
 #include <gtest/gtest.h>
-#include "instruction.h"
+#include "riscinstructions.h"
+
+using namespace RISC;
 
 TEST(InstructionParsingTests, RTypes) {
     std::bitset<32> instruction = 0b01011110001000001000001010110011;

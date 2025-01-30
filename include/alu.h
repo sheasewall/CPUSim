@@ -10,8 +10,7 @@ public:
     ALU() {}
     ~ALU() {}
 
-    static std::bitset<32> add(std::bitset<32> rs1_val, std::bitset<32> rs2_val);
-    static std::bitset<32> addImmediate(std::bitset<32> rs1_val, std::bitset<12> imm_val);
+    static std::bitset<32> add(std::bitset<32> val1, std::bitset<32> val2);
     static std::bitset<32> addressOffset(std::bitset<32> address, std::bitset<32> offset);
 };
 

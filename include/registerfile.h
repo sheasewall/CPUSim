@@ -2,6 +2,7 @@
 #define REGISTERFILE_H
 
 #include <bitset>
+#include <iostream>
 #include <unordered_map>
 
 class RegisterFile {
@@ -19,7 +20,16 @@ public:
     }
 
     void write(std::bitset<5> reg, std::bitset<32> value) {
+        if (reg == std::bitset<5>(0)) {
+            return;
+        }
         registers.at(reg) = value;
+    }
+
+    void print() {
+        for (auto& reg : registers) {
+            std::cout << "Register " << reg.first.to_ulong() << ": " << reg.second << std::endl;
+        }
     }
 };
 

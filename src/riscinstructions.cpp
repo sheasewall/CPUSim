@@ -2,7 +2,7 @@
 
 using namespace RISC;
 
-RISCInstruction::RISCInstruction(std::bitset<32> instruction)
+Instruction::Instruction(std::bitset<32> instruction)
 {
     std::string instr = instruction.to_string();
 
@@ -11,16 +11,18 @@ RISCInstruction::RISCInstruction(std::bitset<32> instruction)
 
 
 // RType
-RType::RType(std::bitset<32> instruction) : RISCInstruction(instruction)
+RType::RType(std::bitset<32> instruction) : Instruction(instruction)
 {
     std::string instr = instruction.to_string();
-
+    
+    funct7 = std::bitset<7>(instr.substr(0, 7));
     rs2 = std::bitset<5>(instr.substr(7, 5));
     rs1 = std::bitset<5>(instr.substr(12, 5));
+    funct3 = std::bitset<3>(instr.substr(17, 3));
     rd = std::bitset<5>(instr.substr(20, 5));
 }
 
-void RType::decode(std::shared_ptr<RegisterFile> reg_file)
+void RType::decode(std::shared_ptr<RegisterFile> reg_file, std::shared_ptr<ImmGen> imm_gen)
 {
     std::pair<std::bitset<32>, std::bitset<32>> registers = reg_file->read(rs1, rs2);
     rs1_val = registers.first;
@@ -32,32 +34,22 @@ void RType::writeBack(std::shared_ptr<RegisterFile> p_reg_file)
     p_reg_file->write(rd, result);
 }
 
-// Add RType
-struct Add : RType
-{
-    Add(std::bitset<32> instruction) : RType(instruction) {}
-
-    void execute(std::shared_ptr<ALU> p_alu) override
-    {
-        result = p_alu->add(rs1_val, rs2_val);
-    }
-};
-
-
 // IType
-IType::IType(std::bitset<32> instruction) : RISCInstruction(instruction)
+IType::IType(std::bitset<32> instruction) : Instruction(instruction)
 {
     std::string instr = instruction.to_string();
 
     imm = std::bitset<12>(instr.substr(0, 12));
     rs1 = std::bitset<5>(instr.substr(12, 5));
+    funct3 = std::bitset<3>(instr.substr(17, 3));
     rd = std::bitset<5>(instr.substr(20, 5));
 }
 
-void RISC::IType::decode(std::shared_ptr<RegisterFile> reg_file)
+void RISC::IType::decode(std::shared_ptr<RegisterFile> reg_file, std::shared_ptr<ImmGen> imm_gen)
 {
     std::pair<std::bitset<32>, std::bitset<32>> registers = reg_file->read(rs1, 0);
     rs1_val = registers.first;
+    imm_val = imm_gen->signExtend(imm);
 }
 
 void RISC::IType::writeBack(std::shared_ptr<RegisterFile> p_reg_file)
@@ -65,34 +57,30 @@ void RISC::IType::writeBack(std::shared_ptr<RegisterFile> p_reg_file)
     p_reg_file->write(rd, result);
 }
 
-// Addi IType
-struct Addi : IType
-{
-    Addi(std::bitset<32> instruction) : IType(instruction) {}
-
-    void execute(std::shared_ptr<ALU> p_alu) override
-    {
-        result = p_alu->addImmediate(rs1_val, imm);
-    }
-};
-
-
 // SType
-SType::SType(std::bitset<32> instruction) : RISCInstruction(instruction)
+SType::SType(std::bitset<32> instruction) : Instruction(instruction)
 {
     std::string instr = instruction.to_string();
 
     std::bitset<7> imm1 = std::bitset<7>(instr.substr(0, 7));
     rs2 = std::bitset<5>(instr.substr(7, 5));
     rs1 = std::bitset<5>(instr.substr(12, 5));
+    funct3 = std::bitset<3>(instr.substr(17, 3));
     std::bitset<5> imm0 = std::bitset<5>(instr.substr(20, 5));
 
     imm = std::bitset<12>(imm1.to_string() + imm0.to_string());
 }
 
+void SType::decode(std::shared_ptr<RegisterFile> p_reg_file, std::shared_ptr<ImmGen> p_imm_gen)
+{
+    std::pair<std::bitset<32>, std::bitset<32>> registers = p_reg_file->read(rs1, rs2);
+    rs1_val = registers.first;
+    rs2_val = registers.second;
+    imm_val = p_imm_gen->signExtend(imm);
+}
 
 // BType
-BType::BType(std::bitset<32> instruction) : RISCInstruction(instruction)
+BType::BType(std::bitset<32> instruction) : Instruction(instruction)
 {
     std::string instr = instruction.to_string();
 
@@ -100,6 +88,7 @@ BType::BType(std::bitset<32> instruction) : RISCInstruction(instruction)
     std::bitset<6> imm1 = std::bitset<6>(instr.substr(1, 6));
     rs2 = std::bitset<5>(instr.substr(7, 5));
     rs1 = std::bitset<5>(instr.substr(12, 5));
+    funct3 = std::bitset<3>(instr.substr(17, 3));
     std::bitset<4> imm0 = std::bitset<4>(instr.substr(20, 4));
     std::bitset<1> imm2 = std::bitset<1>(instr.substr(24, 1));
 
@@ -108,7 +97,7 @@ BType::BType(std::bitset<32> instruction) : RISCInstruction(instruction)
 
 
 // UType
-UType::UType(std::bitset<32> instruction) : RISCInstruction(instruction)
+UType::UType(std::bitset<32> instruction) : Instruction(instruction)
 {
     std::string instr = instruction.to_string();
 
@@ -118,7 +107,7 @@ UType::UType(std::bitset<32> instruction) : RISCInstruction(instruction)
 
 
 // JType
-JType::JType(std::bitset<32> instruction) : RISCInstruction(instruction)
+JType::JType(std::bitset<32> instruction) : Instruction(instruction)
 {
     std::string instr = instruction.to_string();
 

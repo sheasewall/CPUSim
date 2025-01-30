@@ -6,44 +6,45 @@ set(CMAKE_CXX_STANDARD_REQUIRED True)
 
 include_directories(${PROJECT_SOURCE_DIR}/include)
 
-
-add_executable(CPUSim
-    src/main.cpp
-    src/controlunit.cpp
+# Create a library for shared code
+add_library(cpu_lib
     src/alu.cpp
-    include/fileiounit.hpp
+    src/controlunit.cpp
+    src/riscinstructions.cpp
 )
 
+# Link the main executable with the library
+add_executable(CPUSim
+    src/main.cpp
+)
+target_link_libraries(CPUSim cpu_lib)
+
+# Setup Google Test
 include(FetchContent)
 FetchContent_Declare(
-  googletest
-  URL https://github.com/google/googletest/archive/release-1.11.0.zip
+    googletest
+    URL https://github.com/google/googletest/archive/release-1.11.0.zip
 )
 set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
 FetchContent_MakeAvailable(googletest)
 
 enable_testing()
 
+# Link test executables with the library
 add_executable(alu_tests
     tests/alu_tests.cpp
-    src/alu.cpp
 )
-
-target_link_libraries(alu_tests GTest::gtest_main)
+target_link_libraries(alu_tests cpu_lib GTest::gtest_main)
 
 add_executable(controlunit_tests
     tests/controlunit_tests.cpp
-    src/controlunit.cpp
 )
-
-target_link_libraries(controlunit_tests GTest::gtest_main)
+target_link_libraries(controlunit_tests cpu_lib GTest::gtest_main)
 
 add_executable(instruction_parsing_tests
     tests/instruction_parsing_tests.cpp
-    include/instruction.h
 )
-
-target_link_libraries(instruction_parsing_tests GTest::gtest_main)
+target_link_libraries(instruction_parsing_tests cpu_lib GTest::gtest_main)
 
 include(GoogleTest)
 gtest_discover_tests(alu_tests)
