@@ -5,7 +5,7 @@ int main(int, char**)
 {
     std::cout << "Hello, from CPUSim!\n";
     // Example usage of CPU and Memory classes
-    ControlUnit controlUnit;
+    // ControlUnit controlUnit;
     // while (!controlUnit.isHalted())
     // {
     //     std::string input;
@@ -43,7 +43,7 @@ int main(int, char**)
             quit = true;
         }
         unsigned int line_num = std::stoi(input);
-        controlUnit.run(line_num);
+        // controlUnit.run(line_num);
     }
 }
 

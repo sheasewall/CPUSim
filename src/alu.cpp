@@ -1,33 +1,28 @@
 #include "alu.h"
 
-int ALU::add(int a, int b)
+std::bitset<32> ALU::add(std::bitset<32> rs1_val, std::bitset<32> rs2_val)
 {
-    return a + b;
+    std::bitset<1> carry = 0;
+    std::bitset<32> result;
+    for (int i = 0; i < 32; i++) {
+        result.set(i, rs1_val.test(i) ^ rs2_val.test(i) ^ carry.any());
+        carry = (rs1_val.test(i) & rs2_val.test(i)) | (rs2_val.test(i) & carry.any()) | (rs1_val.test(i) & carry.any());
+    }
+    return result;
 }
 
-unsigned int ALU::addressOffset(unsigned int address, int offset)
+std::bitset<32> ALU::addImmediate(std::bitset<32> rs1_val, std::bitset<12> imm_val)
 {
-    int converted = 0;
-    if (address < 0) {
-        throw std::out_of_range("Address underflow.");
+    // Sign extend the immediate value
+    std::bitset<32> imm = imm_val.to_ulong();
+    if (imm.test(11)) {
+        for (std::size_t i = 12; i >= 31; i++) {
+            imm.set(i);
+        }
     }
-    if (address < std::numeric_limits<int>::max()) {
-        converted = static_cast<int>(address);
-    }
-    else {
-        throw std::out_of_range("Address overflow.");
-    }
-    converted += offset;
-    if (converted < 0) {
-        throw std::out_of_range("Offset address underflow.");
-    }
-    if (converted > std::numeric_limits<unsigned int>::max()) {
-        throw std::out_of_range("Offset address overflow.");
-    }
-    return static_cast<unsigned int>(converted);
 }
 
-int ALU::subtract(int a, int b)
+std::bitset<32> ALU::addressOffset(std::bitset<32> address, std::bitset<32> offset)
 {
-    return a - b;
+    return std::bitset<32>();
 }

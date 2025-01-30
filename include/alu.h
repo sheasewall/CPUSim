@@ -3,15 +3,16 @@
 
 #include <limits>
 #include <stdexcept>
+#include <bitset>
 
 class ALU {
 public:
     ALU() {}
     ~ALU() {}
 
-    int add(int a, int b);
-    unsigned int addressOffset(unsigned int address, int offset);
-    int subtract(int a, int b);
+    static std::bitset<32> add(std::bitset<32> rs1_val, std::bitset<32> rs2_val);
+    static std::bitset<32> addImmediate(std::bitset<32> rs1_val, std::bitset<12> imm_val);
+    static std::bitset<32> addressOffset(std::bitset<32> address, std::bitset<32> offset);
 };
 
 #endif // ALU_H

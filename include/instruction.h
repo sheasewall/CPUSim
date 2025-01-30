@@ -3,6 +3,8 @@
 
 #include "fileiounit.hpp"
 #include "register.h"
+#include "alu.h"
+#include "controlunit.h"
 
 #include <sstream>
 #include <unordered_map>
@@ -51,136 +53,7 @@ struct Instruction
     virtual void execute() = 0;
 };
 
-/// RISC-V Types
 
-// Register-Register operation
-struct RType : Instruction 
-{
-    std::bitset<5> rd;
-    std::bitset<5> rs1;
-    std::bitset<5> rs2;
-
-    RType(std::bitset<32> instruction)
-    {
-        std::string instr = instruction.to_string();
-
-        rs2 = std::bitset<5>(instr.substr(7, 5));
-        rs1 = std::bitset<5>(instr.substr(12, 5));
-        rd = std::bitset<5>(instr.substr(20, 5));
-    }
-
-    void execute() override {}
-};
-
-// Immediate operations
-struct IType : Instruction 
-{
-    std::bitset<5> rd;
-    std::bitset<5> rs1;
-    std::bitset<12> imm;
-
-    IType(std::bitset<32> instruction)
-    {
-        std::string instr = instruction.to_string();
-
-        imm = std::bitset<12>(instr.substr(0, 12));
-        rs1 = std::bitset<5>(instr.substr(12, 5));
-        rd = std::bitset<5>(instr.substr(20, 5));
-    }
-
-    void execute() override {}
-};
-
-// Store operations
-struct SType : Instruction 
-{
-    std::bitset<5> rs1;
-    std::bitset<5> rs2;
-    std::bitset<12> imm;
-
-    SType(std::bitset<32> instruction)
-    {
-        std::string instr = instruction.to_string();
-
-        std::bitset<7> imm1 = std::bitset<7>(instr.substr(0, 7));
-        rs2 = std::bitset<5>(instr.substr(7, 5));
-        rs1 = std::bitset<5>(instr.substr(12, 5));
-        std::bitset<5> imm0 = std::bitset<5>(instr.substr(20, 5));
-
-        imm = std::bitset<12>(imm1.to_string() + imm0.to_string());
-    }
-
-    void execute() override {}
-};
-
-// Branch operations
-struct BType : Instruction 
-{
-    std::bitset<5> rs1;
-    std::bitset<5> rs2;
-    // This value represents a multiple of 2, meaning 
-    // it must be shifted left by 1 to get the actual value
-    // This will be done in the execute method
-    std::bitset<12> imm; 
-
-    BType(std::bitset<32> instruction)
-    {
-        std::string instr = instruction.to_string();
-
-        std::bitset<1> imm3 = std::bitset<1>(instr.substr(0, 1));
-        std::bitset<6> imm1 = std::bitset<6>(instr.substr(1, 6));
-        rs2 = std::bitset<5>(instr.substr(7, 5));
-        rs1 = std::bitset<5>(instr.substr(12, 5));
-        std::bitset<4> imm0 = std::bitset<4>(instr.substr(20, 4));
-        std::bitset<1> imm2 = std::bitset<1>(instr.substr(24, 1));
-
-        imm = std::bitset<12>(imm3.to_string() + imm2.to_string() + imm1.to_string() + imm0.to_string());
-    }
-
-    void execute() override {}
-};
-
-// Upper immediate operations
-struct UType : Instruction 
-{
-    std::bitset<5> rd;
-    std::bitset<20> imm;
-
-    UType(std::bitset<32> instruction)
-    {
-        std::string instr = instruction.to_string();
-
-        imm = std::bitset<20>(instr.substr(0, 20));
-        rd = std::bitset<5>(instr.substr(20, 5));
-    }
-
-    void execute() override {}
-};
-
-// Jump operations
-struct JType : Instruction 
-{
-    std::bitset<5> rd;
-    // This value represents a multiple of 2, meaning 
-    // it must be shifted left by 1 to get the actual value
-    // This will be done in the execute method
-    std::bitset<20> imm; 
-
-    JType(std::bitset<32> instruction)
-    {
-        std::string instr = instruction.to_string();
-
-        std::bitset<1> imm3 = std::bitset<1>(instr.substr(0, 1));
-        std::bitset<10> imm0 = std::bitset<10>(instr.substr(1, 10));
-        std::bitset<1> imm1 = std::bitset<1>(instr.substr(11, 1));
-        std::bitset<8> imm2 = std::bitset<8>(instr.substr(12, 8));
-        rd = std::bitset<5>(instr.substr(20, 5));
-
-        imm = std::bitset<20>(imm3.to_string() + imm2.to_string() + imm1.to_string() + imm0.to_string());
-    }
-
-    void execute() override {}
-};
 
 ///
 
@@ -322,7 +195,8 @@ struct Clear : OperandInstruction
     void execute() override {
         try {
             FileIOUnit::clearLineFromFile(memory_file, operand.getVal());
-        } catch (const std::exception& e) {
+        }
+        catch (const std::exception& e) {
             std::cerr << e.what() << std::endl;
         }
     }
@@ -338,7 +212,8 @@ struct Write : OperandAndOperandInstruction {
     void execute() override {
         try {
             FileIOUnit::writeLineToFile<int>(memory_file, leftOperand.getVal(), rightOperand.getVal());
-        } catch (const std::exception& e) {
+        }
+        catch (const std::exception& e) {
             std::cerr << e.what() << std::endl;
         }
     }
@@ -354,7 +229,8 @@ struct Read : OperandAndRegInstruction {
     void execute() override {
         try {
             rightReg->setVal(FileIOUnit::readLineFromFile(memory_file, leftOperand.getVal()));
-        } catch (const std::exception& e) {
+        }
+        catch (const std::exception& e) {
             std::cerr << e.what() << std::endl;
         }
     }
@@ -370,7 +246,8 @@ struct Append : OperandAndOperandInstruction {
     void execute() override {
         try {
             FileIOUnit::appendToFile<char>(memory_file, leftOperand.getVal(), char(rightOperand.getVal()));
-        } catch (const std::exception& e) {
+        }
+        catch (const std::exception& e) {
             std::cerr << e.what() << std::endl;
         }
     }
@@ -386,7 +263,8 @@ struct ReadChar : OperandAndRegInstruction {
     void execute() override {
         try {
             rightReg->setVal(int(FileIOUnit::destructiveRead(memory_file, leftOperand.getVal())));
-        } catch (const std::exception& e) {
+        }
+        catch (const std::exception& e) {
             std::cerr << e.what() << std::endl;
         }
     }
