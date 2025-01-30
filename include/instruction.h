@@ -56,23 +56,17 @@ struct Instruction
 // Register-Register operation
 struct RType : Instruction 
 {
-    std::bitset<7> opcode;
     std::bitset<5> rd;
-    std::bitset<3> funct3;
     std::bitset<5> rs1;
     std::bitset<5> rs2;
-    std::bitset<7> funct7;
 
     RType(std::bitset<32> instruction)
     {
         std::string instr = instruction.to_string();
 
-        funct7 = std::bitset<7>(instr.substr(0, 7));
         rs2 = std::bitset<5>(instr.substr(7, 5));
         rs1 = std::bitset<5>(instr.substr(12, 5));
-        funct3 = std::bitset<3>(instr.substr(17, 3));
         rd = std::bitset<5>(instr.substr(20, 5));
-        opcode = std::bitset<7>(instr.substr(25, 7));
     }
 
     void execute() override {}
@@ -81,9 +75,7 @@ struct RType : Instruction
 // Immediate operations
 struct IType : Instruction 
 {
-    std::bitset<7> opcode;
     std::bitset<5> rd;
-    std::bitset<3> funct3;
     std::bitset<5> rs1;
     std::bitset<12> imm;
 
@@ -93,9 +85,7 @@ struct IType : Instruction
 
         imm = std::bitset<12>(instr.substr(0, 12));
         rs1 = std::bitset<5>(instr.substr(12, 5));
-        funct3 = std::bitset<3>(instr.substr(17, 3));
         rd = std::bitset<5>(instr.substr(20, 5));
-        opcode = std::bitset<7>(instr.substr(25, 7));
     }
 
     void execute() override {}
@@ -104,8 +94,6 @@ struct IType : Instruction
 // Store operations
 struct SType : Instruction 
 {
-    std::bitset<7> opcode;
-    std::bitset<3> funct3;
     std::bitset<5> rs1;
     std::bitset<5> rs2;
     std::bitset<12> imm;
@@ -117,9 +105,7 @@ struct SType : Instruction
         std::bitset<7> imm1 = std::bitset<7>(instr.substr(0, 7));
         rs2 = std::bitset<5>(instr.substr(7, 5));
         rs1 = std::bitset<5>(instr.substr(12, 5));
-        funct3 = std::bitset<3>(instr.substr(17, 3));
         std::bitset<5> imm0 = std::bitset<5>(instr.substr(20, 5));
-        opcode = std::bitset<7>(instr.substr(25, 7));
 
         imm = std::bitset<12>(imm1.to_string() + imm0.to_string());
     }
@@ -130,8 +116,6 @@ struct SType : Instruction
 // Branch operations
 struct BType : Instruction 
 {
-    std::bitset<7> opcode;
-    std::bitset<3> funct3;
     std::bitset<5> rs1;
     std::bitset<5> rs2;
     // This value represents a multiple of 2, meaning 
@@ -147,10 +131,8 @@ struct BType : Instruction
         std::bitset<6> imm1 = std::bitset<6>(instr.substr(1, 6));
         rs2 = std::bitset<5>(instr.substr(7, 5));
         rs1 = std::bitset<5>(instr.substr(12, 5));
-        funct3 = std::bitset<3>(instr.substr(17, 3));
         std::bitset<4> imm0 = std::bitset<4>(instr.substr(20, 4));
         std::bitset<1> imm2 = std::bitset<1>(instr.substr(24, 1));
-        opcode = std::bitset<7>(instr.substr(25, 7));
 
         imm = std::bitset<12>(imm3.to_string() + imm2.to_string() + imm1.to_string() + imm0.to_string());
     }
@@ -161,7 +143,6 @@ struct BType : Instruction
 // Upper immediate operations
 struct UType : Instruction 
 {
-    std::bitset<7> opcode;
     std::bitset<5> rd;
     std::bitset<20> imm;
 
@@ -171,7 +152,6 @@ struct UType : Instruction
 
         imm = std::bitset<20>(instr.substr(0, 20));
         rd = std::bitset<5>(instr.substr(20, 5));
-        opcode = std::bitset<7>(instr.substr(25, 7));
     }
 
     void execute() override {}
@@ -180,7 +160,6 @@ struct UType : Instruction
 // Jump operations
 struct JType : Instruction 
 {
-    std::bitset<7> opcode;
     std::bitset<5> rd;
     // This value represents a multiple of 2, meaning 
     // it must be shifted left by 1 to get the actual value
@@ -196,7 +175,6 @@ struct JType : Instruction
         std::bitset<1> imm1 = std::bitset<1>(instr.substr(11, 1));
         std::bitset<8> imm2 = std::bitset<8>(instr.substr(12, 8));
         rd = std::bitset<5>(instr.substr(20, 5));
-        opcode = std::bitset<7>(instr.substr(25, 7));
 
         imm = std::bitset<20>(imm3.to_string() + imm2.to_string() + imm1.to_string() + imm0.to_string());
     }
