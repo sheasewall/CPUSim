@@ -1,6 +1,7 @@
 #ifndef CONTROLUNIT_H
 #define CONTROLUNIT_H
 
+
 #include "alu.h"
 #include "riscinstructions.h"
 #include "immgen.h"
@@ -20,26 +21,27 @@ private:
     std::bitset<32> current_instruction;
     std::shared_ptr<RISC::Instruction> p_current_instruction;
 
-    std::shared_ptr<InstructionMemory> p_instruction_memory;
+    std::shared_ptr<InstructionFile> p_instruction_file;
     std::shared_ptr<ImmGen> p_imm_gen;
     std::shared_ptr<RegisterFile> p_reg_file;
     std::shared_ptr<ALU> p_alu;
-    std::shared_ptr<DataMemory> p_data_mem;
+    std::shared_ptr<MemoryFile> p_data_file;
 
 public:
-    ControlUnit(std::string instruction_file, std::string data_file) {
+    ControlUnit(std::string instruction_file, std::string register_file, std::string data_file) {
         cycles = 0;
         pc = std::bitset<32>(0);
-        p_instruction_memory = std::make_shared<InstructionMemory>(instruction_file);
+        p_instruction_file = std::make_shared<InstructionFile>(instruction_file);
         p_imm_gen = std::make_shared<ImmGen>();
-        p_reg_file = std::make_shared<RegisterFile>();
+        p_reg_file = std::make_shared<RegisterFile>(register_file);
         p_alu = std::make_shared<ALU>();
-        p_data_mem = std::make_shared<DataMemory>(data_file);
+        p_data_file = std::make_shared<MemoryFile>(data_file);
     }
     ~ControlUnit() {}
 
     void step();
     void print();
+    void dump();
 
 private:
     void fetch();

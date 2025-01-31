@@ -16,6 +16,7 @@ add_library(cpu_lib
 # Link the main executable with the library
 add_executable(CPUSim
     src/main.cpp
+    include/file.hpp
 )
 target_link_libraries(CPUSim cpu_lib)
 

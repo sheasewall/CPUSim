@@ -2,7 +2,7 @@
 
 int main(int, char**)
 {
-    ControlUnit cu("../../../data/instructions.txt", "../../../data/data.txt");
+    ControlUnit cu("../../../data/instructions.txt", "../../../data/registers.txt", "../../../data/data.txt");
     cu.step();
     cu.print();
     cu.step();
@@ -15,5 +15,10 @@ int main(int, char**)
     cu.print();
     cu.step();
     cu.print();
+    cu.step();
+    cu.print();
+    cu.step();
+    cu.print();
+    cu.dump();
 }
 

@@ -12,21 +12,29 @@ void ControlUnit::step() {
 void ControlUnit::print()
 {
     std::cout << "Cycle: " << cycles << std::endl;
+    p_instruction_file->print();
     p_reg_file->print();
-    p_data_mem->print();
+    p_data_file->print();
     std::cout << std::endl;
 }
 
+void ControlUnit::dump()
+{
+    p_instruction_file->dump();
+    p_reg_file->dump();
+    p_data_file->dump();
+}
+
 void ControlUnit::fetch() {
-    current_instruction = p_instruction_memory->read(pc);
+    current_instruction = p_instruction_file->read(pc);
     // "Add circuit" to increment the program counter
     pc = pc.to_ullong() + 4;
 }
 
 void ControlUnit::decode() {
     RISC::Instruction generic_instruction(current_instruction);
-    
-    if (generic_instruction.opcode == 0b0110011) { 
+
+    if (generic_instruction.opcode == 0b0110011) {
         // RType
         RISC::RType r_instruction(current_instruction);
         if (r_instruction.funct3 == 0b000 && r_instruction.funct7 == 0b0000000) {
@@ -61,14 +69,18 @@ void ControlUnit::decode() {
     }
     else if (generic_instruction.opcode == 0b0100011) {
         // SType 
-        RISC::SType i_instruction(current_instruction);
-        if (i_instruction.funct3 == 0b010) {
+        RISC::SType s_instruction(current_instruction);
+        if (s_instruction.funct3 == 0b010) {
             // LoadW
-            p_current_instruction = std::unique_ptr<RISC::Instruction>(new RISC::SaveW(i_instruction));
+            p_current_instruction = std::unique_ptr<RISC::Instruction>(new RISC::SaveW(s_instruction));
         }
         else {
-            throw std::runtime_error("Unknown funct3: " + i_instruction.funct3.to_string());
+            throw std::runtime_error("Unknown funct3: " + s_instruction.funct3.to_string());
         }
+    }
+    else if (generic_instruction.opcode == 0b0110111) {
+        // UType (LUI)
+        p_current_instruction = std::unique_ptr<RISC::Instruction>(new RISC::LUI(current_instruction));
     }
     else {
         throw std::runtime_error("Unknown opcode: " + generic_instruction.opcode.to_string());
@@ -82,7 +94,7 @@ void ControlUnit::execute() {
 }
 
 void ControlUnit::memoryAccess() {
-    p_current_instruction->accessMemory(p_data_mem);
+    p_current_instruction->accessMemory(p_data_file);
 }
 
 void ControlUnit::writeBack() {

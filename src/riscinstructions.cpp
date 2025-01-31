@@ -14,7 +14,7 @@ Instruction::Instruction(std::bitset<32> instruction)
 RType::RType(std::bitset<32> instruction) : Instruction(instruction)
 {
     std::string instr = instruction.to_string();
-    
+
     funct7 = std::bitset<7>(instr.substr(0, 7));
     rs2 = std::bitset<5>(instr.substr(7, 5));
     rs1 = std::bitset<5>(instr.substr(12, 5));
@@ -33,6 +33,7 @@ void RType::writeBack(std::shared_ptr<RegisterFile> p_reg_file)
 {
     p_reg_file->write(rd, result);
 }
+
 
 // IType
 IType::IType(std::bitset<32> instruction) : Instruction(instruction)
@@ -57,6 +58,7 @@ void RISC::IType::writeBack(std::shared_ptr<RegisterFile> p_reg_file)
     p_reg_file->write(rd, result);
 }
 
+
 // SType
 SType::SType(std::bitset<32> instruction) : Instruction(instruction)
 {
@@ -78,6 +80,7 @@ void SType::decode(std::shared_ptr<RegisterFile> p_reg_file, std::shared_ptr<Imm
     rs2_val = registers.second;
     imm_val = p_imm_gen->signExtend(imm);
 }
+
 
 // BType
 BType::BType(std::bitset<32> instruction) : Instruction(instruction)
@@ -103,6 +106,16 @@ UType::UType(std::bitset<32> instruction) : Instruction(instruction)
 
     imm = std::bitset<20>(instr.substr(0, 20));
     rd = std::bitset<5>(instr.substr(20, 5));
+}
+
+void RISC::UType::decode(std::shared_ptr<RegisterFile> p_reg_file, std::shared_ptr<ImmGen> p_imm_gen)
+{
+    imm_val = p_imm_gen->generateLong(imm);
+}
+
+void RISC::UType::writeBack(std::shared_ptr<RegisterFile> p_reg_file)
+{
+    p_reg_file->write(rd, result);
 }
 
 
