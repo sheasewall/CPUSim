@@ -8,10 +8,13 @@ std::bitset<32> ALU::add(std::bitset<32> val1, std::bitset<32> val2)
         result.set(i, val1.test(i) ^ val2.test(i) ^ carry.any());
         carry = (val1.test(i) & val2.test(i)) | (val2.test(i) & carry.any()) | (val1.test(i) & carry.any());
     }
+    if (result == 0) {
+        
+    }
     return result;
 }
 
-std::bitset<32> ALU::addressOffset(std::bitset<32> address, std::bitset<32> offset)
+bool ALU::isEqual(std::bitset<32> val1, std::bitset<32> val2)
 {
-    return std::bitset<32>();
+    return val1 == val2;
 }

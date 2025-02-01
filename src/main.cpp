@@ -19,6 +19,10 @@ int main(int, char**)
     cu.print();
     cu.step();
     cu.print();
+    cu.step();
+    cu.print();    
+    cu.step();
+    cu.print();
     cu.dump();
 }
 

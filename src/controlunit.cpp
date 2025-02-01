@@ -27,70 +27,86 @@ void ControlUnit::dump()
 
 void ControlUnit::fetch() {
     current_instruction = p_instruction_file->read(pc);
-    // "Add circuit" to increment the program counter
-    pc = pc.to_ullong() + 4;
 }
 
 void ControlUnit::decode() {
     RISC::Instruction generic_instruction(current_instruction);
 
-    if (generic_instruction.opcode == 0b0110011) {
-        // RType
-        RISC::RType r_instruction(current_instruction);
-        if (r_instruction.funct3 == 0b000 && r_instruction.funct7 == 0b0000000) {
-            // Add
-            p_current_instruction = std::unique_ptr<RISC::Instruction>(new RISC::Add(r_instruction));
+    switch (generic_instruction.opcode.to_ulong()) {
+        case 0b0110011: {
+            // RType
+            RISC::RType r_instruction(current_instruction);
+            if (r_instruction.funct3 == 0b000 && r_instruction.funct7 == 0b0000000) {
+                // Add
+                p_current_instruction = std::unique_ptr<RISC::Instruction>(new RISC::Add(r_instruction));
+            } else {
+                throw std::runtime_error("Unknown funct3/funct7 combination: " + r_instruction.funct3.to_string() + "/" + r_instruction.funct7.to_string());
+            }
+            break;
         }
-        else {
-            throw std::runtime_error("Unknown funct3/funct7 combination: " + r_instruction.funct3.to_string() + "/" + r_instruction.funct7.to_string());
+        case 0b0010011: {
+            // IType
+            RISC::IType i_instruction(current_instruction);
+            if (i_instruction.funct3 == 0b000) {
+                // Addi
+                p_current_instruction = std::unique_ptr<RISC::Instruction>(new RISC::AddImm(i_instruction));
+            } else {
+                throw std::runtime_error("Unknown funct3: " + i_instruction.funct3.to_string());
+            }
+            break;
         }
-    }
-    else if (generic_instruction.opcode == 0b0010011) {
-        // IType
-        RISC::IType i_instruction(current_instruction);
-        if (i_instruction.funct3 == 0b000) {
-            // Addi
-            p_current_instruction = std::unique_ptr<RISC::Instruction>(new RISC::AddI(i_instruction));
+        case 0b0000011: {
+            // IType (Load)
+            RISC::IType i_instruction(current_instruction);
+            if (i_instruction.funct3 == 0b010) {
+                // LoadWord
+                p_current_instruction = std::unique_ptr<RISC::Instruction>(new RISC::LoadWord(i_instruction));
+            } else {
+                throw std::runtime_error("Unknown funct3: " + i_instruction.funct3.to_string());
+            }
+            break;
         }
-        else {
-            throw std::runtime_error("Unknown funct3: " + i_instruction.funct3.to_string());
+        case 0b0100011: {
+            // SType 
+            RISC::SType s_instruction(current_instruction);
+            if (s_instruction.funct3 == 0b010) {
+                // SaveWord
+                p_current_instruction = std::unique_ptr<RISC::Instruction>(new RISC::SaveWord(s_instruction));
+            } else {
+                throw std::runtime_error("Unknown funct3: " + s_instruction.funct3.to_string());
+            }
+            break;
         }
-    }
-    else if (generic_instruction.opcode == 0b0000011) {
-        // IType (Load)
-        RISC::IType i_instruction(current_instruction);
-        if (i_instruction.funct3 == 0b010) {
-            // LoadW
-            p_current_instruction = std::unique_ptr<RISC::Instruction>(new RISC::LoadW(i_instruction));
+        case 0b0110111: {
+            // UType (LoadUpperImmediate)
+            p_current_instruction = std::unique_ptr<RISC::Instruction>(new RISC::LoadUpperImmediate(current_instruction));
+            break;
         }
-        else {
-            throw std::runtime_error("Unknown funct3: " + i_instruction.funct3.to_string());
+        case 0b1101111: {
+            // JType (JumpAndLink)
+            p_current_instruction = std::unique_ptr<RISC::Instruction>(new RISC::JumpAndLink(current_instruction));
+            break;
         }
-    }
-    else if (generic_instruction.opcode == 0b0100011) {
-        // SType 
-        RISC::SType s_instruction(current_instruction);
-        if (s_instruction.funct3 == 0b010) {
-            // LoadW
-            p_current_instruction = std::unique_ptr<RISC::Instruction>(new RISC::SaveW(s_instruction));
+        case 0b1100011: {
+            // BType
+            RISC::BType b_instruction(current_instruction);
+            if (b_instruction.funct3 == 0b000) {
+                // BranchEqual
+                p_current_instruction = std::unique_ptr<RISC::Instruction>(new RISC::BranchEqual(b_instruction));
+            } else {
+                throw std::runtime_error("Unknown funct3: " + b_instruction.funct3.to_string());
+            }
+            break;
         }
-        else {
-            throw std::runtime_error("Unknown funct3: " + s_instruction.funct3.to_string());
-        }
-    }
-    else if (generic_instruction.opcode == 0b0110111) {
-        // UType (LUI)
-        p_current_instruction = std::unique_ptr<RISC::Instruction>(new RISC::LUI(current_instruction));
-    }
-    else {
-        throw std::runtime_error("Unknown opcode: " + generic_instruction.opcode.to_string());
+        default:
+            throw std::runtime_error("Unknown opcode: " + generic_instruction.opcode.to_string());
     }
 
     p_current_instruction->decode(p_reg_file, p_imm_gen);
 }
 
 void ControlUnit::execute() {
-    p_current_instruction->execute(p_alu);
+    p_current_instruction->execute(p_alu, pc);
 }
 
 void ControlUnit::memoryAccess() {
