@@ -152,19 +152,21 @@ namespace RISC {
         virtual void writeBack(std::shared_ptr<RegisterFile> p_reg_file) override;
     };
 
-
+    // ADD rd,rs1,rs2
     struct Add : RType {
         Add(RType instruction) : RType(instruction) {}
         Add(std::bitset<32> instruction) : RType(instruction) {}
         void execute(std::shared_ptr<ALU> p_alu, std::bitset<32>& pc) override;
     };
 
+    // ADDI rd,rs1,imm
     struct AddImm : IType {
         AddImm(IType instruction) : IType(instruction) {}
         AddImm(std::bitset<32> instruction) : IType(instruction) {}
         void execute(std::shared_ptr<ALU> p_alu, std::bitset<32>& pc) override;
     };
 
+    // LW rd,offset(rs1)
     struct LoadWord : IType {
         LoadWord(IType instruction) : IType(instruction) {}
         LoadWord(std::bitset<32> instruction) : IType(instruction) {}
@@ -172,6 +174,7 @@ namespace RISC {
         void accessMemory(std::shared_ptr<MemoryFile> p_data_file) override;
     };
 
+    // SW rs2,offset(rs1)
     struct SaveWord : SType {
         SaveWord(SType instruction) : SType(instruction) {}
         SaveWord(std::bitset<32> instruction) : SType(instruction) {}
@@ -179,18 +182,21 @@ namespace RISC {
         void accessMemory(std::shared_ptr<MemoryFile> p_data_file) override;
     };
 
+    // BEQ rs1,rs2,offset
     struct BranchEqual : BType {
         BranchEqual(BType instruction) : BType(instruction) {}
         BranchEqual(std::bitset<32> instruction) : BType(instruction) {}
         void execute(std::shared_ptr<ALU> p_alu, std::bitset<32>& pc) override;
     };
 
+    // LUI rd,imm
     struct LoadUpperImmediate : UType {
         LoadUpperImmediate(UType instruction) : UType(instruction) {}
         LoadUpperImmediate(std::bitset<32> instruction) : UType(instruction) {}
         void execute(std::shared_ptr<ALU> p_alu, std::bitset<32>& pc) override;
     };
 
+    // JAL rd,offset
     struct JumpAndLink : JType {
         JumpAndLink(JType instruction) : JType(instruction) {}
         JumpAndLink(std::bitset<32> instruction) : JType(instruction) {}
