@@ -152,12 +152,77 @@ namespace RISC {
         virtual void writeBack(std::shared_ptr<RegisterFile> p_reg_file) override;
     };
 
-    // ADD rd,rs1,rs2
+    // add rd,rs1,rs2
     struct Add : RType {
         Add(RType instruction) : RType(instruction) {}
         Add(std::bitset<32> instruction) : RType(instruction) {}
         void execute(std::shared_ptr<ALU> p_alu, std::bitset<32>& pc) override;
     };
+
+    // sub rd,rs1,rs2
+    struct Sub : RType {
+        Sub(RType instruction) : RType(instruction) {}
+        Sub(std::bitset<32> instruction) : RType(instruction) {}
+        void execute(std::shared_ptr<ALU> p_alu, std::bitset<32>& pc) override;
+    };
+
+    // xor rd,rs1,rs2
+    struct Xor : RType {
+        Xor(RType instruction) : RType(instruction) {}
+        Xor(std::bitset<32> instruction) : RType(instruction) {}
+        void execute(std::shared_ptr<ALU> p_alu, std::bitset<32>& pc) override;
+    };
+
+    // or rd,rs1,rs2
+    struct Or : RType {
+        Or(RType instruction) : RType(instruction) {}
+        Or(std::bitset<32> instruction) : RType(instruction) {}
+        void execute(std::shared_ptr<ALU> p_alu, std::bitset<32>& pc) override;
+    };
+
+    // and rd,rs1,rs2
+    struct And : RType {
+        And(RType instruction) : RType(instruction) {}
+        And(std::bitset<32> instruction) : RType(instruction) {}
+        void execute(std::shared_ptr<ALU> p_alu, std::bitset<32>& pc) override;
+    };
+
+    // sll rd,rs1,rs2
+    struct Sll : RType {
+        Sll(RType instruction) : RType(instruction) {}
+        Sll(std::bitset<32> instruction) : RType(instruction) {}
+        void execute(std::shared_ptr<ALU> p_alu, std::bitset<32>& pc) override;
+    };
+
+    // srl rd,rs1,rs2
+    struct Srl : RType {
+        Srl(RType instruction) : RType(instruction) {}
+        Srl(std::bitset<32> instruction) : RType(instruction) {}
+        void execute(std::shared_ptr<ALU> p_alu, std::bitset<32>& pc) override;
+    };
+
+    // sra rd,rs1,rs2
+    struct Sra : RType {
+        Sra(RType instruction) : RType(instruction) {}
+        Sra(std::bitset<32> instruction) : RType(instruction) {}
+        void execute(std::shared_ptr<ALU> p_alu, std::bitset<32>& pc) override;
+    };
+
+    // slt rd,rs1,rs2
+    struct Slt : RType {
+        Slt(RType instruction) : RType(instruction) {}
+        Slt(std::bitset<32> instruction) : RType(instruction) {}
+        void execute(std::shared_ptr<ALU> p_alu, std::bitset<32>& pc) override;
+    };
+
+    // sltu rd,rs1,rs2
+    struct Sltu : RType {
+        Sltu(RType instruction) : RType(instruction) {}
+        Sltu(std::bitset<32> instruction) : RType(instruction) {}
+        void execute(std::shared_ptr<ALU> p_alu, std::bitset<32>& pc) override;
+    };
+
+    //
 
     // ADDI rd,rs1,imm
     struct AddImm : IType {
@@ -200,6 +265,14 @@ namespace RISC {
     struct JumpAndLink : JType {
         JumpAndLink(JType instruction) : JType(instruction) {}
         JumpAndLink(std::bitset<32> instruction) : JType(instruction) {}
+        void execute(std::shared_ptr<ALU> p_alu, std::bitset<32>& pc) override;
+        void writeBack(std::shared_ptr<RegisterFile> p_reg_file) override;
+    };
+
+    // JALR rd,offset
+    struct JumpAndLinkReg : IType {
+        JumpAndLinkReg(IType instruction) : IType(instruction) {}
+        JumpAndLinkReg(std::bitset<32> instruction) : IType(instruction) {}
         void execute(std::shared_ptr<ALU> p_alu, std::bitset<32>& pc) override;
         void writeBack(std::shared_ptr<RegisterFile> p_reg_file) override;
     };

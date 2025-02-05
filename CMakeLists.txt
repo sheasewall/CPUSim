@@ -11,6 +11,7 @@ add_library(cpu_lib
     src/alu.cpp
     src/controlunit.cpp
     src/riscinstructions.cpp
+    src/translator.cpp
 )
 
 # Link the main executable with the library
@@ -46,6 +47,11 @@ add_executable(instruction_parsing_tests
     tests/instruction_parsing_tests.cpp
 )
 target_link_libraries(instruction_parsing_tests cpu_lib GTest::gtest_main)
+
+add_executable(instruction_translating_tests
+    tests/instruction_translating_tests.cpp
+)
+target_link_libraries(instruction_translating_tests cpu_lib GTest::gtest_main)
 
 include(GoogleTest)
 gtest_discover_tests(alu_tests)

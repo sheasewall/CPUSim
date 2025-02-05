@@ -1,7 +1,5 @@
 #include "translator.h"
 
-#include <sstream>
-
 std::vector<std::string> Translator::tokenize(std::string instruction, std::vector<char> delimiters)
 {
     std::stringstream ss(instruction);
@@ -28,22 +26,38 @@ std::bitset<5> Translator::getRegister(std::string reg)
 
 std::bitset<12> Translator::getImmediate(std::string imm)
 {
-    return std::bitset<12>(std::stoi(imm));
+    int imm_val = std::stoi(imm);
+    if (imm_val >= 2048) { // 2^11
+        throw std::invalid_argument("Immediate value is too large");
+    }
+    return std::bitset<12>(imm_val);
 }
 
 std::bitset<12> Translator::getImmediateMulOf2(std::string imm)
 {
-    return std::bitset<12>(std::stoi(imm) >> 1);
+    int imm_val = std::stoi(imm);
+    if (imm_val >= 4096) { // 2^12
+        throw std::invalid_argument("Immediate value is too large");
+    }
+    return std::bitset<12>(imm_val >> 1);
 }
 
 std::bitset<20> Translator::getImmediateLong(std::string imm)
 {
-    return std::bitset<20>(std::stoi(imm));
+    int imm_val = stol(imm);
+    if (imm_val >= 524288) { // 2^19
+        throw std::invalid_argument("Immediate value is too large");
+    }
+    return std::bitset<20>(imm_val);
 }
 
 std::bitset<20> Translator::getImmediateLongMulOf2(std::string imm)
 {
-    return std::bitset<20>(std::stoi(imm) >> 1);
+    int imm_val = stol(imm);
+    if (imm_val >= 1048576) { // 2^20
+        throw std::invalid_argument("Immediate value is too large");
+    }
+    return std::bitset<20>(imm_val >> 1);
 }
 
 std::bitset<32> Translator::constructRType(std::bitset<7> funct7, std::bitset<5> rs2, std::bitset<5> rs1, std::bitset<3> funct3, std::bitset<5> rd, std::bitset<7> opcode)
@@ -257,6 +271,9 @@ std::bitset<32> Translator::translate(std::string instruction)
 
     // Get the instruction name
     ss >> token;
+    // This system is ugly, should be revisited
+    // Perhaps we can map directly to the 
+    // generator function
     switch (instructionCodeMap.at(token).type)
     {
     case R:
@@ -294,4 +311,32 @@ std::bitset<32> Translator::translate(std::string instruction)
     }
 
     return translated;
+}
+
+void Translator::translateFile(std::string filename)
+{
+    std::ifstream input_file(filename + ".asm");
+    if (!input_file.is_open()) {
+        throw std::runtime_error("Could not open input file: " + filename + ".asm");
+    }
+
+    std::string output_file_name = filename + ".bin";
+    std::ofstream output_file(output_file_name);
+    if (!output_file.is_open()) {
+        throw std::runtime_error("Could not open output file: " + output_file_name + ".bin");
+    }
+
+    std::stringstream output;
+
+    unsigned int line_number = 0;
+    std::string instruction;
+    while (std::getline(input_file, instruction)) {
+        std::bitset<32> binary_instruction = translate(instruction);
+
+        for (int i = 3; 0 <= i; i--) {
+            std::bitset<8> current_byte = std::bitset<8>(binary_instruction.to_string().substr(i * 8, 8));
+            output_file << line_number << " " << current_byte << std::endl;
+            line_number++;
+        }
+    }
 }

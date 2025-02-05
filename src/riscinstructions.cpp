@@ -40,6 +40,53 @@ namespace RISC
         pc = p_alu->add(pc, std::bitset<32>(4));
     }
 
+    // Sub
+    void Sub::execute(std::shared_ptr<ALU> p_alu, std::bitset<32>& pc)
+    {
+        std::bitset<32> negated = p_alu->negate(rs2_val);
+        result = p_alu->add(rs1_val, negated);
+        pc = p_alu->add(pc, std::bitset<32>(4));
+    }
+
+    // Xor
+    void Xor::execute(std::shared_ptr<ALU> p_alu, std::bitset<32>& pc)
+    {
+    }
+
+    // Or
+    void Or::execute(std::shared_ptr<ALU> p_alu, std::bitset<32>& pc)
+    {
+    }
+
+    // And
+    void And::execute(std::shared_ptr<ALU> p_alu, std::bitset<32>& pc)
+    {
+    }
+
+    // Sll
+    void Sll::execute(std::shared_ptr<ALU> p_alu, std::bitset<32>& pc)
+    {
+    }
+
+    // Srl
+    void Srl::execute(std::shared_ptr<ALU> p_alu, std::bitset<32>& pc)
+    {
+    }
+
+    // Sra
+    void Sra::execute(std::shared_ptr<ALU> p_alu, std::bitset<32>& pc)
+    {
+    }
+
+    // Slt
+    void Slt::execute(std::shared_ptr<ALU> p_alu, std::bitset<32>& pc)
+    {
+    }
+
+    // Sltu
+    void Sltu::execute(std::shared_ptr<ALU> p_alu, std::bitset<32>& pc)
+    {
+    }
 
     // IType
     IType::IType(std::bitset<32> instruction) : Instruction(instruction)
@@ -147,7 +194,7 @@ namespace RISC
     void BranchEqual::execute(std::shared_ptr<ALU> p_alu, std::bitset<32>& pc)
     {
         std::bitset<32> imm_val_shifted = p_alu->add(imm_val, imm_val);
-        if (p_alu->isEqual(rs1_val, rs2_val)) {
+        if (p_alu->hardwareIsEqual(rs1_val, rs2_val)) {
             pc = p_alu->add(pc, imm_val_shifted);
         }
         else {
@@ -214,6 +261,19 @@ namespace RISC
     }
 
     void JumpAndLink::writeBack(std::shared_ptr<RegisterFile> p_reg_file)
+    {
+        p_reg_file->write(rd, result);
+    }
+
+    // Jump and link register
+    void JumpAndLinkReg::execute(std::shared_ptr<ALU> p_alu, std::bitset<32>& pc)
+    {
+        result = p_alu->add(pc, std::bitset<32>(4));
+        std::bitset<32> offset = p_alu->add(rs1_val, imm_val);
+        pc = p_alu->add(pc, offset);
+    }
+
+    void JumpAndLinkReg::writeBack(std::shared_ptr<RegisterFile> p_reg_file)
     {
         p_reg_file->write(rd, result);
     }

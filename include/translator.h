@@ -3,6 +3,27 @@
 
 #include <bitset>
 #include <map>
+#include <fstream>
+#include <sstream>
+
+// This could be achieved in a more OO way 
+// using polymorphism similar to how Instructions
+// are represented in the simulator code
+// Perhaps something like below
+/*
+class AssemblyInstruction
+{
+    std::string instruction;
+
+    Tokenizer tokenizer;
+
+public:
+    AssemblyInstruction(std::string instruction) : instruction(instruction) {}
+    virtual ~AssemblyInstruction() {}
+
+    virtual std::bitset<32> encode() = 0;
+};
+*/
 
 enum InstructionType
 {
@@ -23,6 +44,8 @@ struct FunctionCodes {
     std::bitset<3> funct3;
     std::bitset<7> opcode;
     InstructionType type;
+
+    std::function<std::bitset<32>(std::vector<std::string>)> encode;
 };
 
 const std::map<std::string, FunctionCodes> instructionCodeMap = {
@@ -105,6 +128,7 @@ public:
     ~Translator() {}
 
     std::bitset<32> translate(std::string instruction);
+    void translateFile(std::string filename);
 };
 
 #endif // TRANSLATOR_H
