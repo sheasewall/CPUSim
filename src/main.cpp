@@ -3,26 +3,12 @@
 int main(int, char**)
 {
     ControlUnit cu("../../../data/instructions.txt", "../../../data/registers.txt", "../../../data/data.txt");
-    cu.step();
-    cu.print();
-    cu.step();
-    cu.print();
-    cu.step();
-    cu.print();
-    cu.step();
-    cu.print();
-    cu.step();
-    cu.print();
-    cu.step();
-    cu.print();
-    cu.step();
-    cu.print();
-    cu.step();
-    cu.print();
-    cu.step();
-    cu.print();    
-    cu.step();
-    cu.print();
+
+    for (int i = 0; i < 14; i++) 
+    {
+        cu.step();
+    }
+
     cu.dump();
 }
 

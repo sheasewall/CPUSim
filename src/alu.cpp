@@ -59,17 +59,22 @@ bool ALU::lessThanUnsigned(std::bitset<32> val1, std::bitset<32> val2)
     std::bitset<32> highest_bit_val1 = hardwareRightShift(val1, std::bitset<32>(31));
     std::bitset<32> highest_bit_val2 = hardwareRightShift(val2, std::bitset<32>(31));
 
+    std::bitset<32> high_bits_differ = bitwiseXor(highest_bit_val1, highest_bit_val2); 
+    std::bitset<32> high_bits_differ_and_val1_is_greater   = bitwiseAnd(high_bits_differ, highest_bit_val1);
+
+    if (hardwareIsEqual(high_bits_differ_and_val1_is_greater, std::bitset<32>(1))) {
+        return false;
+    }
+
+    std::bitset<32> high_bits_differ_and_val2_is_greater   = bitwiseAnd(high_bits_differ, highest_bit_val2);
+    if (hardwareIsEqual(high_bits_differ_and_val2_is_greater, std::bitset<32>(1))) {
+        return true;
+    }
+
     std::bitset<32> val1_advanced = hardwareLeftShift(val1, std::bitset<32>(1));
     std::bitset<32> val2_advanced = hardwareLeftShift(val2, std::bitset<32>(1));
 
-    if (hardwareIsEqual(highest_bit_val1, highest_bit_val2)) {
-        return lessThanUnsigned(val1_advanced, val2_advanced);
-    }
-
-    if (hardwareIsEqual(highest_bit_val1, std::bitset<32>(0))) {
-        return true;
-    }
-    return false;
+    return lessThanUnsigned(val1_advanced, val2_advanced);
 }
 
 bool ALU::lessThanSigned(std::bitset<32> val1, std::bitset<32> val2) {
@@ -88,16 +93,36 @@ bool ALU::lessThanSigned(std::bitset<32> val1, std::bitset<32> val2) {
         return false;
     }
 
-    // If we have gotten here, then we know val1 and val2 have the same sign
-    //  so, if val1 is positive, then val2 is positive, and we
-    //  can do unsigned comparison
-    if (hardwareIsEqual(highest_bit_val1, std::bitset<32>(0))) {
-        return lessThanUnsigned(val1, val2);
+    std::bitset<32> val1_advanced = hardwareLeftShift(val1, std::bitset<32>(1));
+    std::bitset<32> val2_advanced = hardwareLeftShift(val2, std::bitset<32>(1));
+
+    return lessThanUnsigned(val1_advanced, val2_advanced);
+}
+
+std::bitset<32> ALU::arithmeticRightShift(std::bitset<32> val, std::bitset<32> shamt)
+{
+    std::bitset<32> shamt_upper_27 = hardwareRightShift(shamt, std::bitset<32>(5));
+
+    // I want to get rid of this logical not
+    if (!hardwareIsEqual(shamt_upper_27, std::bitset<32>(0))) {
+        return arithmeticRightShift(val, std::bitset<32>(31));
     }
 
-    // If we have gotten here, then we know val1 and val2 have the same sign
-    //  and val1 is negative, so val2 is negative, so we 
-    //  want to return |val2| < |val1|
-    return lessThanUnsigned(val2, val1);
+    std::bitset<32> shamt_lower_5 = hardwareLeftShift(shamt, std::bitset<32>(27));
+    shamt_lower_5 = hardwareRightShift(shamt_lower_5, std::bitset<32>(27));
+
+    if (hardwareIsEqual(shamt_lower_5, std::bitset<32>(0))) {
+        return val;
+    }
+
+    std::bitset<32> sign_bit = hardwareRightShift(val, std::bitset<32>(31));
+    std::bitset<32> shifted_val = hardwareRightShift(val, std::bitset<32>(1));
+
+    std::bitset<32> mask = hardwareLeftShift(sign_bit, std::bitset<32>(31));
+    shifted_val = bitwiseOr(shifted_val, mask);
+
+    std::bitset<32> neg_one = negate(std::bitset<32>(1));
+    std::bitset<32> shamt_minus_one = add(shamt_lower_5, neg_one);
+    return arithmeticRightShift(shifted_val, shamt_minus_one);
 }
 

@@ -207,86 +207,131 @@ TEST(ALUTest, Negate) {
 TEST(ALUTest, LessThanUnsigned) {
     std::bitset<32> val1     = 0b00000000000000000000000000000000;
     std::bitset<32> val2     = 0b00000000000000000000000000000000;
-    bool expected = false;
-    EXPECT_EQ(alu.lessThanUnsigned(val1, val2), expected) << val1 << " " << val2;
+    EXPECT_FALSE(alu.lessThanUnsigned(val1, val2)) << val1 << " " << val2;
 
     val1     = 0b00000000000000000000000000000001;
     val2     = 0b00000000000000000000000000000000;
-    expected = false;
-    EXPECT_EQ(alu.lessThanUnsigned(val1, val2), expected) << val1 << " " << val2;
+    EXPECT_FALSE(alu.lessThanUnsigned(val1, val2)) << val1 << " " << val2;
 
     val1     = 0b00000000000000000000000000000000;
     val2     = 0b00000000000000000000000000000001;
-    expected = true;
-    EXPECT_EQ(alu.lessThanUnsigned(val1, val2), expected) << val1 << " " << val2;
+    EXPECT_TRUE(alu.lessThanUnsigned(val1, val2)) << val1 << " " << val2;
 
     val1     = 0b10100000000000000000000000000000;
     val2     = 0b10000000000000000000000000000000;
-    expected = false;
-    EXPECT_EQ(alu.lessThanUnsigned(val1, val2), expected) << val1 << " " << val2;
+    EXPECT_FALSE(alu.lessThanUnsigned(val1, val2)) << val1 << " " << val2;
 
     val1     = 0b10000000000000000000000000000000;
     val2     = 0b10100000000000000000000000000000;
-    expected = true;
-    EXPECT_EQ(alu.lessThanUnsigned(val1, val2), expected) << val1 << " " << val2;
+    EXPECT_TRUE(alu.lessThanUnsigned(val1, val2)) << val1 << " " << val2;
 
     val1     = 0b11111111111111111111111111111111;
     val2     = 0b11111111111111111111111111111111;
-    expected = false;
-    EXPECT_EQ(alu.lessThanUnsigned(val1, val2), expected) << val1 << " " << val2;
+    EXPECT_FALSE(alu.lessThanUnsigned(val1, val2)) << val1 << " " << val2;
 
     val1     = 0b11111111111111111111111111111111;
     val2     = 0b11111111111111111111111111111110;
-    expected = false;
-    EXPECT_EQ(alu.lessThanUnsigned(val1, val2), expected) << val1 << " " << val2;
+    EXPECT_FALSE(alu.lessThanUnsigned(val1, val2)) << val1 << " " << val2;
 
     val1     = 0b11111111111111111111111111111110;
     val2     = 0b11111111111111111111111111111111;
-    expected = true;
-    EXPECT_EQ(alu.lessThanUnsigned(val1, val2), expected) << val1 << " " << val2;
+    EXPECT_TRUE(alu.lessThanUnsigned(val1, val2)) << val1 << " " << val2;
 }
 
 TEST(ALUTest, LessThanSigned) {
+    // 0, 0
     std::bitset<32> val1     = 0b00000000000000000000000000000000;
     std::bitset<32> val2     = 0b00000000000000000000000000000000;
-    bool expected = false;
-    EXPECT_EQ(alu.lessThanSigned(val1, val2), expected) << val1 << " " << val2;
+    EXPECT_FALSE(alu.lessThanSigned(val1, val2)) << val1 << " " << val2;
 
+    // 1, 0
     val1     = 0b00000000000000000000000000000001;
     val2     = 0b00000000000000000000000000000000;
-    expected = false;
-    EXPECT_EQ(alu.lessThanSigned(val1, val2), expected) << val1 << " " << val2;
+    EXPECT_FALSE(alu.lessThanSigned(val1, val2)) << val1 << " " << val2;
 
+    // 0, 1
     val1     = 0b00000000000000000000000000000000;
     val2     = 0b00000000000000000000000000000001;
-    expected = true;
-    EXPECT_EQ(alu.lessThanSigned(val1, val2), expected) << val1 << " " << val2;
+    EXPECT_TRUE(alu.lessThanSigned(val1, val2)) << val1 << " " << val2;
 
+    // -126, -128
     val1     = 0b10100000000000000000000000000000;
     val2     = 0b10000000000000000000000000000000;
-    expected = true;
-    EXPECT_EQ(alu.lessThanSigned(val1, val2), expected) << val1 << " " << val2;
+    EXPECT_FALSE(alu.lessThanSigned(val1, val2)) << val1 << " " << val2;
 
+    // -128, -126
     val1     = 0b10000000000000000000000000000000;
     val2     = 0b10100000000000000000000000000000;
-    expected = false;
-    EXPECT_EQ(alu.lessThanSigned(val1, val2), expected) << val1 << " " << val2;
+    EXPECT_TRUE(alu.lessThanSigned(val1, val2)) << val1 << " " << val2;
 
+    // -1, -1
     val1     = 0b11111111111111111111111111111111;
     val2     = 0b11111111111111111111111111111111;
-    expected = false;
-    EXPECT_EQ(alu.lessThanSigned(val1, val2), expected) << val1 << " " << val2;
+    EXPECT_FALSE(alu.lessThanSigned(val1, val2)) << val1 << " " << val2;
 
+    // -1, -2
     val1     = 0b11111111111111111111111111111111;
     val2     = 0b11111111111111111111111111111110;
-    expected = true;
-    EXPECT_EQ(alu.lessThanSigned(val1, val2), expected) << val1 << " " << val2;
+    EXPECT_FALSE(alu.lessThanSigned(val1, val2)) << val1 << " " << val2;
 
+    // -2, -1
     val1     = 0b11111111111111111111111111111110;
     val2     = 0b11111111111111111111111111111111;
-    expected = false;
-    EXPECT_EQ(alu.lessThanSigned(val1, val2), expected) << val1 << " " << val2;
+    EXPECT_TRUE(alu.lessThanSigned(val1, val2)) << val1 << " " << val2;
+
+    // 1, -1
+    val1     = 0b00000000000000000000000000000001;
+    val2     = 0b11111111111111111111111111111111;
+    EXPECT_FALSE(alu.lessThanSigned(val1, val2)) << val1 << " " << val2;
+
+    // -1, 1
+    val1     = 0b11111111111111111111111111111111;
+    val2     = 0b00000000000000000000000000000001;
+    EXPECT_TRUE(alu.lessThanSigned(val1, val2)) << val1 << " " << val2;
+
+    // 1, 2
+    val1     = 0b00000000000000000000000000000001;
+    val2     = 0b00000000000000000000000000000010;
+    EXPECT_TRUE(alu.lessThanSigned(val1, val2)) << val1 << " " << val2;
+
+    // 2, 1
+    val1     = 0b00000000000000000000000000000010;
+    val2     = 0b00000000000000000000000000000001;
+    EXPECT_FALSE(alu.lessThanSigned(val1, val2)) << val1 << " " << val2;
 }
+
+TEST(ALUTest, ArithmeticRightShift) {
+    std::bitset<32> val1     = 0b00000000000000000000000000000001;
+    std::bitset<32> val2     = 0b00000000000000000000000000000000;
+    std::bitset<32> expected = 0b00000000000000000000000000000001;
+    EXPECT_EQ(alu.arithmeticRightShift(val1, val2), expected);
+
+    val1     = 0b10000000000000000000000000000000;
+    val2     = 0b00000000000000000000000000000001;
+    expected = 0b11000000000000000000000000000000;
+    EXPECT_EQ(alu.arithmeticRightShift(val1, val2), expected);
+    
+    val1     = 0b10000000000000000000000000000000;
+    val2     = 0b00000000000000000000000000000011;
+    expected = 0b11110000000000000000000000000000;
+    EXPECT_EQ(alu.arithmeticRightShift(val1, val2), expected);
+
+    val1     = 0b10000000000000000000000000000000;
+    val2     = 0b10000000000000000000000000000000;
+    expected = 0b11111111111111111111111111111111;
+    EXPECT_EQ(alu.arithmeticRightShift(val1, val2), expected);
+    
+    val1     = 0b10000000000000000000000000000001;
+    val2     = 0b00000000000000000000000000000001;
+    expected = 0b11000000000000000000000000000000;
+    EXPECT_EQ(alu.arithmeticRightShift(val1, val2), expected);
+
+    val1     = 0b11111000000000000000000000010101;
+    val2     = 0b00000000000000000000000000000100;
+    expected = 0b11111111100000000000000000000001;
+    EXPECT_EQ(alu.arithmeticRightShift(val1, val2), expected);
+}
+
 
 int main(int argc, char** argv) {
     ::testing::InitGoogleTest(&argc, argv);
