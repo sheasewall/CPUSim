@@ -65,19 +65,19 @@ public:
 
     /**
      * @brief Performs a left shift operation on a 32-bit bitset.
-     * @param val1 The 32-bit bitset to be shifted.
+     * @param val The 32-bit bitset to be shifted.
      * @param shamt The amount to shift by, as a 32-bit bitset.
      * @return The result of the left shift operation.
      */
-    static std::bitset<32> hardwareLeftShift(std::bitset<32> val1, std::bitset<32> shamt) { return val1 << shamt.to_ulong(); }
+    static std::bitset<32> hardwareLeftShift(std::bitset<32> val, std::bitset<32> shamt) { return val << shamt.to_ulong(); }
 
     /**
      * @brief Performs a right shift operation on a 32-bit bitset.
-     * @param val1 The 32-bit bitset to be shifted.
+     * @param val The 32-bit bitset to be shifted.
      * @param shamt The amount to shift by, as a 32-bit bitset.
      * @return The result of the right shift operation.
      */
-    static std::bitset<32> hardwareRightShift(std::bitset<32> val1, std::bitset<32> shamt) { return val1 >> shamt.to_ulong(); }
+    static std::bitset<32> hardwareRightShift(std::bitset<32> val, std::bitset<32> shamt) { return val >> shamt.to_ulong(); }
 
     /**
      * @brief Checks if two 32-bit bitsets are equal.
@@ -166,6 +166,12 @@ public:
      * @return The result of the addition.
      */
     static std::bitset<32> add(std::bitset<32> val1, std::bitset<32> val2);
+
+    static bool lessThanUnsigned(std::bitset<32> val1, std::bitset<32> val2);
+    static bool lessThanSigned(std::bitset<32> val1, std::bitset<32> val2);
+
+    // static std::bitset<32> rightShiftArithmetic(std::bitset<32> val, std::bitset<32> shamt);
+
 
     /** @} */ // end of Arithmetic Operations
 };

@@ -29,6 +29,11 @@ namespace RISC
         rs2_val = registers.second;
     }
 
+    void RType::execute(std::shared_ptr<ALU> p_alu, std::bitset<32>& pc)
+    {
+        pc = p_alu->add(pc, std::bitset<32>(4));
+    }
+
     void RType::writeBack(std::shared_ptr<RegisterFile> p_reg_file)
     {
         p_reg_file->write(rd, result);
@@ -37,7 +42,7 @@ namespace RISC
     // Add 
     void Add::execute(std::shared_ptr<ALU> p_alu, std::bitset<32>& pc) {
         result = p_alu->add(rs1_val, rs2_val);
-        pc = p_alu->add(pc, std::bitset<32>(4));
+        RType::execute(p_alu, pc);
     }
 
     // Sub
@@ -45,42 +50,58 @@ namespace RISC
     {
         std::bitset<32> negated = p_alu->negate(rs2_val);
         result = p_alu->add(rs1_val, negated);
-        pc = p_alu->add(pc, std::bitset<32>(4));
+        RType::execute(p_alu, pc);
     }
 
     // Xor
     void Xor::execute(std::shared_ptr<ALU> p_alu, std::bitset<32>& pc)
     {
+        result = p_alu->bitwiseXor(rs1_val, rs2_val);
+        RType::execute(p_alu, pc);
     }
 
     // Or
     void Or::execute(std::shared_ptr<ALU> p_alu, std::bitset<32>& pc)
     {
+        result = p_alu->bitwiseOr(rs1_val, rs2_val);
+        RType::execute(p_alu, pc);
     }
 
     // And
     void And::execute(std::shared_ptr<ALU> p_alu, std::bitset<32>& pc)
     {
+        result = p_alu->bitwiseAnd(rs1_val, rs2_val);
+        RType::execute(p_alu, pc);
     }
 
     // Sll
     void Sll::execute(std::shared_ptr<ALU> p_alu, std::bitset<32>& pc)
     {
+        rs2_val = p_alu->hardwareRightShift(p_alu->hardwareLeftShift(rs2_val, std::bitset<32>(27)), std::bitset<32>(27));
+        result = p_alu->hardwareLeftShift(rs1_val, rs2_val);
+        RType::execute(p_alu, pc);
     }
 
     // Srl
     void Srl::execute(std::shared_ptr<ALU> p_alu, std::bitset<32>& pc)
     {
+        rs2_val = p_alu->hardwareRightShift(p_alu->hardwareLeftShift(rs2_val, std::bitset<32>(27)), std::bitset<32>(27));
+        result = p_alu->hardwareRightShift(rs1_val, rs2_val);
+        RType::execute(p_alu, pc);
     }
 
     // Sra
     void Sra::execute(std::shared_ptr<ALU> p_alu, std::bitset<32>& pc)
     {
+        rs2_val = p_alu->hardwareRightShift(p_alu->hardwareLeftShift(rs2_val, std::bitset<32>(27)), std::bitset<32>(27));
+        // result = p_alu->rightShiftArithmetic(rs1_val, rs2_val);
+        RType::execute(p_alu, pc);
     }
 
     // Slt
     void Slt::execute(std::shared_ptr<ALU> p_alu, std::bitset<32>& pc)
     {
+
     }
 
     // Sltu

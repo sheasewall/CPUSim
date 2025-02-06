@@ -204,6 +204,90 @@ TEST(ALUTest, Negate) {
     EXPECT_EQ(alu.negate(val1), expected);
 }
 
+TEST(ALUTest, LessThanUnsigned) {
+    std::bitset<32> val1     = 0b00000000000000000000000000000000;
+    std::bitset<32> val2     = 0b00000000000000000000000000000000;
+    bool expected = false;
+    EXPECT_EQ(alu.lessThanUnsigned(val1, val2), expected) << val1 << " " << val2;
+
+    val1     = 0b00000000000000000000000000000001;
+    val2     = 0b00000000000000000000000000000000;
+    expected = false;
+    EXPECT_EQ(alu.lessThanUnsigned(val1, val2), expected) << val1 << " " << val2;
+
+    val1     = 0b00000000000000000000000000000000;
+    val2     = 0b00000000000000000000000000000001;
+    expected = true;
+    EXPECT_EQ(alu.lessThanUnsigned(val1, val2), expected) << val1 << " " << val2;
+
+    val1     = 0b10100000000000000000000000000000;
+    val2     = 0b10000000000000000000000000000000;
+    expected = false;
+    EXPECT_EQ(alu.lessThanUnsigned(val1, val2), expected) << val1 << " " << val2;
+
+    val1     = 0b10000000000000000000000000000000;
+    val2     = 0b10100000000000000000000000000000;
+    expected = true;
+    EXPECT_EQ(alu.lessThanUnsigned(val1, val2), expected) << val1 << " " << val2;
+
+    val1     = 0b11111111111111111111111111111111;
+    val2     = 0b11111111111111111111111111111111;
+    expected = false;
+    EXPECT_EQ(alu.lessThanUnsigned(val1, val2), expected) << val1 << " " << val2;
+
+    val1     = 0b11111111111111111111111111111111;
+    val2     = 0b11111111111111111111111111111110;
+    expected = false;
+    EXPECT_EQ(alu.lessThanUnsigned(val1, val2), expected) << val1 << " " << val2;
+
+    val1     = 0b11111111111111111111111111111110;
+    val2     = 0b11111111111111111111111111111111;
+    expected = true;
+    EXPECT_EQ(alu.lessThanUnsigned(val1, val2), expected) << val1 << " " << val2;
+}
+
+TEST(ALUTest, LessThanSigned) {
+    std::bitset<32> val1     = 0b00000000000000000000000000000000;
+    std::bitset<32> val2     = 0b00000000000000000000000000000000;
+    bool expected = false;
+    EXPECT_EQ(alu.lessThanSigned(val1, val2), expected) << val1 << " " << val2;
+
+    val1     = 0b00000000000000000000000000000001;
+    val2     = 0b00000000000000000000000000000000;
+    expected = false;
+    EXPECT_EQ(alu.lessThanSigned(val1, val2), expected) << val1 << " " << val2;
+
+    val1     = 0b00000000000000000000000000000000;
+    val2     = 0b00000000000000000000000000000001;
+    expected = true;
+    EXPECT_EQ(alu.lessThanSigned(val1, val2), expected) << val1 << " " << val2;
+
+    val1     = 0b10100000000000000000000000000000;
+    val2     = 0b10000000000000000000000000000000;
+    expected = true;
+    EXPECT_EQ(alu.lessThanSigned(val1, val2), expected) << val1 << " " << val2;
+
+    val1     = 0b10000000000000000000000000000000;
+    val2     = 0b10100000000000000000000000000000;
+    expected = false;
+    EXPECT_EQ(alu.lessThanSigned(val1, val2), expected) << val1 << " " << val2;
+
+    val1     = 0b11111111111111111111111111111111;
+    val2     = 0b11111111111111111111111111111111;
+    expected = false;
+    EXPECT_EQ(alu.lessThanSigned(val1, val2), expected) << val1 << " " << val2;
+
+    val1     = 0b11111111111111111111111111111111;
+    val2     = 0b11111111111111111111111111111110;
+    expected = true;
+    EXPECT_EQ(alu.lessThanSigned(val1, val2), expected) << val1 << " " << val2;
+
+    val1     = 0b11111111111111111111111111111110;
+    val2     = 0b11111111111111111111111111111111;
+    expected = false;
+    EXPECT_EQ(alu.lessThanSigned(val1, val2), expected) << val1 << " " << val2;
+}
+
 int main(int argc, char** argv) {
     ::testing::InitGoogleTest(&argc, argv);
     return RUN_ALL_TESTS();

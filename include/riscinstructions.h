@@ -43,6 +43,7 @@ namespace RISC {
         RType(std::bitset<32> instruction);
 
         virtual void decode(std::shared_ptr<RegisterFile> p_reg_file, std::shared_ptr<ImmGen> p_imm_gen) override;
+        virtual void execute(std::shared_ptr<ALU> p_alu, std::bitset<32>& pc) override;
         virtual void writeBack(std::shared_ptr<RegisterFile> p_reg_file) override;
     };
 

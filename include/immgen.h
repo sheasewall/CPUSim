@@ -3,6 +3,9 @@
 
 #include <bitset>
 
+// This model should be reviewed. It can be potentially use a lot of 
+// ALU functionality to achieve what it does here. There needs to be 
+// some C++ specific type conversion that must be addressed somehow.
 struct ImmGen {
     static std::bitset<32> signExtend(std::bitset<12> imm_val) {
         std::bitset<32> imm = imm_val.to_ulong();
