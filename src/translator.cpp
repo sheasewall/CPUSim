@@ -137,6 +137,10 @@ std::bitset<32> Translator::generateIType(std::string instruction)
     std::bitset<3> funct3 = funct_codes.funct3;
     std::bitset<7> opcode = funct_codes.opcode;
 
+    if (tokens[0] == ";") {
+        return constructIType(std::bitset<12>(0), std::bitset<5>(0), funct3, std::bitset<5>(0), opcode);
+    }
+
     // Get the destination register 
     std::bitset<5> rd = getRegister(tokens[1]);
     // Get the first source register 

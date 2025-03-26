@@ -170,7 +170,10 @@ public:
     static bool lessThanUnsigned(std::bitset<32> val1, std::bitset<32> val2);
     static bool lessThanSigned(std::bitset<32> val1, std::bitset<32> val2);
 
-    static std::bitset<32> arithmeticRightShift(std::bitset<32> val, std::bitset<32> shamt);
+    static bool greaterThanEqualUnsigned(std::bitset<32> val1, std::bitset<32> val2);
+    static bool greaterThanEqualSigned(std::bitset<32> val1, std::bitset<32> val2);
+
+static std::bitset<32> arithmeticRightShift(std::bitset<32> val, std::bitset<32> shamt);
 
 
     /** @} */ // end of Arithmetic Operations

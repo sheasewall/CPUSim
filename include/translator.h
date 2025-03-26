@@ -36,7 +36,8 @@ enum InstructionType
     IShift, // I types with shamt (effectively a 5-bit immediate)
     ILoad, // I types with parentheses
     Fence, // Ordering instructions
-    System  // Control instructions
+    System,  // Control instructions
+    PseudoRR, // Pseudo instructions with two registers
 };
 
 struct FunctionCodes {
@@ -88,7 +89,17 @@ const std::map<std::string, FunctionCodes> instructionCodeMap = {
     {"jalr", {0b0000000, 0b000, 0b1100111, ILoad}},
     {"ecall", {0b0000000, 0b000, 0b1110011, System}},
     {"ebreak", {0b0000000, 0b001, 0b1110011, System}},
-    {"fence", {0b0000000, 0b000, 0b0001111, Fence}}
+    {"fence", {0b0000000, 0b000, 0b0001111, Fence}},
+    {";", {0b0000000, 0b000, 0b0010011, I}},
+    {"nop", {0b0000000, 0b000, 0b0010011, I}},
+    {"mv", {0b0000000, 0b000, 0b0010011, I}},
+    {"not", {0b0000000, 0b000, 0b0010011, I}},
+    {"neg", {0b0000000, 0b000, 0b0010011, I}},
+    {"negw", {0b0000000, 0b000, 0b0010011, I}},
+    {"seqz", {0b0000000, 0b000, 0b0010011, I}},
+    {"snez", {0b0000000, 0b000, 0b0010011, I}},
+    {"sltz", {0b0000000, 0b000, 0b0010011, I}},
+    {"sgtz", {0b0000000, 0b000, 0b0010011, I}},
 };
 
 class Translator {

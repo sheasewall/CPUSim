@@ -99,6 +99,55 @@ bool ALU::lessThanSigned(std::bitset<32> val1, std::bitset<32> val2) {
     return lessThanUnsigned(val1_advanced, val2_advanced);
 }
 
+bool ALU::greaterThanEqualUnsigned(std::bitset<32> val1, std::bitset<32> val2)
+{
+    if (hardwareIsEqual(val1, val2)) {
+        return true; 
+    }
+
+    std::bitset<32> highest_bit_val1 = hardwareRightShift(val1, std::bitset<32>(31));
+    std::bitset<32> highest_bit_val2 = hardwareRightShift(val2, std::bitset<32>(31));
+
+    std::bitset<32> high_bits_differ = bitwiseXor(highest_bit_val1, highest_bit_val2); 
+    std::bitset<32> high_bits_differ_and_val1_is_greater   = bitwiseAnd(high_bits_differ, highest_bit_val1);
+
+    if (hardwareIsEqual(high_bits_differ_and_val1_is_greater, std::bitset<32>(1))) {
+        return false;
+    }
+
+    std::bitset<32> high_bits_differ_and_val2_is_greater   = bitwiseAnd(high_bits_differ, highest_bit_val2);
+    if (hardwareIsEqual(high_bits_differ_and_val2_is_greater, std::bitset<32>(1))) {
+        return true;
+    }
+
+    std::bitset<32> val1_advanced = hardwareLeftShift(val1, std::bitset<32>(1));
+    std::bitset<32> val2_advanced = hardwareLeftShift(val2, std::bitset<32>(1));
+
+    return greaterThanEqualUnsigned(val1_advanced, val2_advanced);
+}
+
+bool ALU::greaterThanEqualSigned(std::bitset<32> val1, std::bitset<32> val2) {
+    std::bitset<32> highest_bit_val1 = hardwareRightShift(val1, std::bitset<32>(31));
+    std::bitset<32> highest_bit_val2 = hardwareRightShift(val2, std::bitset<32>(31));
+
+    std::bitset<32> high_bits_differ  = bitwiseXor(highest_bit_val1, highest_bit_val2);
+    std::bitset<32> high_bits_differ_and_val1_is_negative   = bitwiseAnd(high_bits_differ, highest_bit_val1);
+
+    if (hardwareIsEqual(high_bits_differ_and_val1_is_negative, std::bitset<32>(1))) {
+        return true;
+    }
+
+    std::bitset<32> high_bits_differ_and_val2_is_negative   = bitwiseAnd(high_bits_differ, highest_bit_val2);
+    if (hardwareIsEqual(high_bits_differ_and_val2_is_negative, std::bitset<32>(1))) {
+        return false;
+    }
+
+    std::bitset<32> val1_advanced = hardwareLeftShift(val1, std::bitset<32>(1));
+    std::bitset<32> val2_advanced = hardwareLeftShift(val2, std::bitset<32>(1));
+
+    return greaterThanEqualUnsigned(val1_advanced, val2_advanced);
+}
+
 std::bitset<32> ALU::arithmeticRightShift(std::bitset<32> val, std::bitset<32> shamt)
 {
     std::bitset<32> shamt_upper_27 = hardwareRightShift(shamt, std::bitset<32>(5));
