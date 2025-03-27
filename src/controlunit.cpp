@@ -9,12 +9,21 @@ void ControlUnit::step() {
     cycles++;
 }
 
-void ControlUnit::print()
+void ControlUnit::print(bool print_instructions, bool print_registers, bool print_data)
 {
     std::cout << "Cycle: " << cycles << std::endl;
-    p_instruction_file->print();
-    p_reg_file->print();
-    p_data_file->print();
+    if (print_instructions) {
+        std::cout << "Instructions: " << std::endl;
+        p_instruction_file->print();
+    }
+    if (print_registers) {
+        std::cout << "Registers: " << std::endl;
+        p_reg_file->print();
+    }
+    if (print_data) {
+        std::cout << "Data: " << std::endl;
+        p_data_file->print();
+    }
     std::cout << std::endl;
 }
 
@@ -45,28 +54,28 @@ void ControlUnit::decode() {
             p_current_instruction = std::unique_ptr<RISC::Instruction>(new RISC::Sub(r_instruction));
         }
         else if (r_instruction.funct3 == 0b001 && r_instruction.funct7 == 0b0000000) {
-            // Sll
-            p_current_instruction = std::unique_ptr<RISC::Instruction>(new RISC::Sll(r_instruction));
+            // ShiftLeftLogi
+            p_current_instruction = std::unique_ptr<RISC::Instruction>(new RISC::ShiftLeftLogi(r_instruction));
         }
         else if (r_instruction.funct3 == 0b010 && r_instruction.funct7 == 0b0000000) {
-            // Slt
-            p_current_instruction = std::unique_ptr<RISC::Instruction>(new RISC::Slt(r_instruction));
+            // SetLessThan
+            p_current_instruction = std::unique_ptr<RISC::Instruction>(new RISC::SetLessThan(r_instruction));
         }
         else if (r_instruction.funct3 == 0b011 && r_instruction.funct7 == 0b0000000) {
-            // Sltu
-            p_current_instruction = std::unique_ptr<RISC::Instruction>(new RISC::Sltu(r_instruction));
+            // SetLessThanUnsigned
+            p_current_instruction = std::unique_ptr<RISC::Instruction>(new RISC::SetLessThanUnsigned(r_instruction));
         }
         else if (r_instruction.funct3 == 0b100 && r_instruction.funct7 == 0b0000000) {
             // Xor
             p_current_instruction = std::unique_ptr<RISC::Instruction>(new RISC::Xor(r_instruction));
         }
         else if (r_instruction.funct3 == 0b101 && r_instruction.funct7 == 0b0000000) {
-            // Srl 
-            p_current_instruction = std::unique_ptr<RISC::Instruction>(new RISC::Srl(r_instruction));
+            // ShiftRightLogi 
+            p_current_instruction = std::unique_ptr<RISC::Instruction>(new RISC::ShiftRightLogi(r_instruction));
         }
         else if (r_instruction.funct3 == 0b101 && r_instruction.funct7 == 0b0100000) {
-            // Sra
-            p_current_instruction = std::unique_ptr<RISC::Instruction>(new RISC::Sra(r_instruction));
+            // ShiftRightArith
+            p_current_instruction = std::unique_ptr<RISC::Instruction>(new RISC::ShiftRightArith(r_instruction));
         }
         else if (r_instruction.funct3 == 0b110 && r_instruction.funct7 == 0b0000000) {
             // Or
@@ -85,40 +94,40 @@ void ControlUnit::decode() {
         // IType
         RISC::IType i_instruction(current_instruction);
         if (i_instruction.funct3 == 0b000) {
-            // Addi
-            p_current_instruction = std::unique_ptr<RISC::Instruction>(new RISC::Addi(i_instruction));
+            // AddImm
+            p_current_instruction = std::unique_ptr<RISC::Instruction>(new RISC::AddImm(i_instruction));
         }
         else if (i_instruction.funct3 == 0b100) {
-            // Xori
-            p_current_instruction = std::unique_ptr<RISC::Instruction>(new RISC::Xori(i_instruction));
+            // XorImm
+            p_current_instruction = std::unique_ptr<RISC::Instruction>(new RISC::XorImm(i_instruction));
         }
         else if (i_instruction.funct3 == 0b110) {
-            // Ori
-            p_current_instruction = std::unique_ptr<RISC::Instruction>(new RISC::Ori(i_instruction));
+            // OrImm
+            p_current_instruction = std::unique_ptr<RISC::Instruction>(new RISC::OrImm(i_instruction));
         }
         else if (i_instruction.funct3 == 0b111) {
-            // Andi
-            p_current_instruction = std::unique_ptr<RISC::Instruction>(new RISC::Andi(i_instruction));
+            // AndImm
+            p_current_instruction = std::unique_ptr<RISC::Instruction>(new RISC::AndImm(i_instruction));
         }
         else if (i_instruction.funct3 == 0b010) {
-            // Slti
-            p_current_instruction = std::unique_ptr<RISC::Instruction>(new RISC::Slti(i_instruction));
+            // SetLessThanImm
+            p_current_instruction = std::unique_ptr<RISC::Instruction>(new RISC::SetLessThanImm(i_instruction));
         }
         else if (i_instruction.funct3 == 0b011) {
-            // Sltiu
-            p_current_instruction = std::unique_ptr<RISC::Instruction>(new RISC::Sltiu(i_instruction));
+            // SetLessThanImmUnsigned
+            p_current_instruction = std::unique_ptr<RISC::Instruction>(new RISC::SetLessThanImmUnsigned(i_instruction));
         }
         else if (i_instruction.funct3 == 0b001 && i_instruction.funct7 == 0b0000000) {
-            // Slli
-            p_current_instruction = std::unique_ptr<RISC::Instruction>(new RISC::Slli(i_instruction));
+            // ShiftLeftLogiImm
+            p_current_instruction = std::unique_ptr<RISC::Instruction>(new RISC::ShiftLeftLogiImm(i_instruction));
         }
         else if (i_instruction.funct3 == 0b101 && i_instruction.funct7 == 0b0000000) {
-            // Srli
-            p_current_instruction = std::unique_ptr<RISC::Instruction>(new RISC::Srli(i_instruction));
+            // ShiftRightLogiImm
+            p_current_instruction = std::unique_ptr<RISC::Instruction>(new RISC::ShiftRightLogiImm(i_instruction));
         }
         else if (i_instruction.funct3 == 0b101 && i_instruction.funct7 == 0b0100000) {
-            // Srai
-            p_current_instruction = std::unique_ptr<RISC::Instruction>(new RISC::Srai(i_instruction));
+            // ShiftRightArithImm
+            p_current_instruction = std::unique_ptr<RISC::Instruction>(new RISC::ShiftRightArithImm(i_instruction));
         }
         else {
             throw std::runtime_error("Unknown funct3: " + i_instruction.funct3.to_string());
@@ -141,12 +150,12 @@ void ControlUnit::decode() {
             p_current_instruction = std::unique_ptr<RISC::Instruction>(new RISC::LoadByte(i_instruction));
         }
         else if (i_instruction.funct3 == 0b101) {
-            // LoadUpperHalfWord
-            p_current_instruction = std::unique_ptr<RISC::Instruction>(new RISC::LoadUpperHalfWord(i_instruction));
+            // LoadUnsignedHalfWord
+            p_current_instruction = std::unique_ptr<RISC::Instruction>(new RISC::LoadUnsignedHalfWord(i_instruction));
         }
         else if (i_instruction.funct3 == 0b100) {
-            // LoadUpperByte
-            p_current_instruction = std::unique_ptr<RISC::Instruction>(new RISC::LoadUpperByte(i_instruction));
+            // LoadUnsignedByte
+            p_current_instruction = std::unique_ptr<RISC::Instruction>(new RISC::LoadUnsignedByte(i_instruction));
         }
         else {
             throw std::runtime_error("Unknown funct3: " + i_instruction.funct3.to_string());
@@ -225,6 +234,23 @@ void ControlUnit::decode() {
         p_current_instruction = std::unique_ptr<RISC::Instruction>(new RISC::JumpAndLinkReg(current_instruction));
         break;
     }
+    case 0b1110011: {
+        // System (IType)
+        RISC::IType s_instruction(current_instruction);
+
+        if (s_instruction.imm == 0b000000000000) {
+            // Ecall
+            p_current_instruction = std::unique_ptr<RISC::Instruction>(new RISC::Ecall(s_instruction));
+        }
+        else if (s_instruction.imm == 0b000000000001) {
+            // Ebreak
+            p_current_instruction = std::unique_ptr<RISC::Instruction>(new RISC::Ebreak(s_instruction));
+        }
+        else {
+            throw std::runtime_error("Unknown imm: " + s_instruction.imm.to_string());
+        }
+        break;
+    }
     default:
         throw std::runtime_error("Unknown opcode: " + generic_instruction.opcode.to_string());
     }
@@ -233,7 +259,13 @@ void ControlUnit::decode() {
 }
 
 void ControlUnit::execute() {
-    p_current_instruction->execute(p_alu, pc);
+    // try {
+        p_current_instruction->execute(p_alu, pc);
+    // } catch (const RiscTrapException& e) {
+    //     std::cout << e.what() << std::endl;
+    // } catch (...) {
+    //     throw std::runtime_error("Error executing instruction");
+    // }
 }
 
 void ControlUnit::memoryAccess() {

@@ -113,6 +113,9 @@ std::bitset<32> Translator::constructIShiftType(std::bitset<7> funct7, std::bits
 std::bitset<32> Translator::generateRType(std::string instruction)
 {
     auto tokens = tokenize(instruction, { ' ', ',', ',', ';' });
+    if (tokens.size() < 4) {
+        throw std::runtime_error("Unknown R-type instruction: " + instruction);
+    }
     FunctionCodes funct_codes = instructionCodeMap.at(tokens[0]);
 
     std::bitset<7> funct7 = funct_codes.funct7;
@@ -132,11 +135,15 @@ std::bitset<32> Translator::generateRType(std::string instruction)
 std::bitset<32> Translator::generateIType(std::string instruction)
 {
     auto tokens = tokenize(instruction, { ' ', ',', ',', ';' });
+    if (tokens.size() < 4) {
+        throw std::runtime_error("Unknown I-type instruction: " + instruction);
+    }
     FunctionCodes funct_codes = instructionCodeMap.at(tokens[0]);
 
     std::bitset<3> funct3 = funct_codes.funct3;
     std::bitset<7> opcode = funct_codes.opcode;
 
+    // Comment delimiter
     if (tokens[0] == ";") {
         return constructIType(std::bitset<12>(0), std::bitset<5>(0), funct3, std::bitset<5>(0), opcode);
     }
@@ -154,6 +161,9 @@ std::bitset<32> Translator::generateIType(std::string instruction)
 std::bitset<32> Translator::generateSType(std::string instruction)
 {
     auto tokens = tokenize(instruction, { ' ', ',', '(', ')' });
+    if (tokens.size() < 4) {
+        throw std::runtime_error("Unknown save instruction: " + instruction);
+    }
     FunctionCodes funct_codes = instructionCodeMap.at(tokens[0]);
 
     std::bitset<3> funct3 = funct_codes.funct3;
@@ -172,6 +182,9 @@ std::bitset<32> Translator::generateSType(std::string instruction)
 std::bitset<32> Translator::generateBType(std::string instruction)
 {
     auto tokens = tokenize(instruction, { ' ', ',', ',', ';' });
+    if (tokens.size() < 4) {
+        throw std::runtime_error("Unknown branch instruction: " + instruction);
+    }
     FunctionCodes funct_codes = instructionCodeMap.at(tokens[0]);
 
     std::bitset<3> funct3 = funct_codes.funct3;
@@ -190,6 +203,9 @@ std::bitset<32> Translator::generateBType(std::string instruction)
 std::bitset<32> Translator::generateUType(std::string instruction)
 {
     auto tokens = tokenize(instruction, { ' ', ',', ';' });
+    if (tokens.size() < 3) {
+        throw std::runtime_error("Unknown long instruction: " + instruction);
+    }
     FunctionCodes funct_codes = instructionCodeMap.at(tokens[0]);
 
     std::bitset<7> opcode = funct_codes.opcode;
@@ -205,6 +221,9 @@ std::bitset<32> Translator::generateUType(std::string instruction)
 std::bitset<32> Translator::generateJType(std::string instruction)
 {
     auto tokens = tokenize(instruction, { ' ', ',', ';' });
+    if (tokens.size() < 3) {
+        throw std::runtime_error("Unknown jump instruction: " + instruction);
+    }
     FunctionCodes funct_codes = instructionCodeMap.at(tokens[0]);
 
     std::bitset<7> opcode = funct_codes.opcode;
@@ -220,6 +239,9 @@ std::bitset<32> Translator::generateJType(std::string instruction)
 std::bitset<32> Translator::generateIShiftType(std::string instruction)
 {
     auto tokens = tokenize(instruction, { ' ', ',', ',', ';' });
+    if (tokens.size() < 4) {
+        throw std::runtime_error("Unknown shift instruction: " + instruction);
+    }
     FunctionCodes funct_codes = instructionCodeMap.at(tokens[0]);
 
     std::bitset<7> funct7 = funct_codes.funct7;
@@ -239,6 +261,10 @@ std::bitset<32> Translator::generateIShiftType(std::string instruction)
 std::bitset<32> Translator::generateILoadType(std::string instruction)
 {
     auto tokens = tokenize(instruction, { ' ', ',', '(', ')' });
+    if (tokens.size() < 4) {
+        throw std::runtime_error("Unknown load instruction: " + instruction);
+    }
+
     FunctionCodes funct_codes = instructionCodeMap.at(tokens[0]);
 
     std::bitset<3> funct3 = funct_codes.funct3;
@@ -263,7 +289,15 @@ std::bitset<32> Translator::generateFenceType(std::string instruction)
 // TODO: Implement system translation
 std::bitset<32> Translator::generateSystemType(std::string instruction)
 {
-    throw std::runtime_error("system translation not yet implemented");
+    if (instruction == "ecall;") {
+        return std::bitset<32>(0b00000000000000000000000001110011);
+    }
+    else if (instruction == "ebreak;") {
+        return std::bitset<32>(0b00000000000100000000000001110011);
+    }
+    else {
+        throw std::runtime_error("Unknown system instruction: " + instruction);
+    }
 }
 
 std::bitset<32> Translator::translate(std::string instruction)

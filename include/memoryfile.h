@@ -27,42 +27,44 @@ public:
         return result;
     }
 
-    // Read functions
-    // Performs address incrementing operations,
-    // which could be done by ALU. But I'm not sure
-    // I want to introduce that dependency. 
-    // Also uses string manipulation, which could be
-    // replaced with bit manipulation
-    std::bitset<32> readWord(std::bitset<32> address) {
-        std::bitset<8> b1 = data.at(address);
-        std::bitset<8> b2 = data.at(incrementAddress(address));
-        std::bitset<8> b3 = data.at(incrementAddress(address));
-        std::bitset<8> b4 = data.at(incrementAddress(address));
-
-        return std::bitset<32>(b4.to_string() + b3.to_string() + b2.to_string() + b1.to_string());
+    // I chose to do this within the memory file as opposed to
+    // within the ALU or the ImmGen in order to avoid exposing
+    // the ALU in the ReadMemory stage of the pipeline. 
+    // Whether or not this is actually something I should care
+    // about, I am not entirely sure. Either way, I implement it
+    // here using the simplest of logic in order to justify 
+    // the fact that the sign extender could theoretically exist
+    // within the 'memory chip'.
+    static std::bitset<32> signExtendByteCircuit(std::bitset<32> value) {
+        if (value.test(7)) {
+            value |= 0xFFFFFF00;
+        }
+        else {
+            value &= 0x000000FF;
+        }
+        return value;
     }
 
-    std::bitset<32> readHalfWord(std::bitset<32> address) {
-        std::bitset<8> b1 = data.at(address);
-        std::bitset<8> b2 = data.at(incrementAddress(address));
-
-        return std::bitset<32>(b2.to_string() + b1.to_string());
+    static std::bitset<32> signExtendHalfWordCircuit(std::bitset<32> value) {
+        if (value.test(15)) {
+            value |= 0xFFFF0000;
+        }
+        else {
+            value &= 0x0000FFFF;
+        }
+        return value;
     }
 
-    std::bitset<32> readByte(std::bitset<32> address) {
-        return std::bitset<32>(data.at(address).to_string());
-    }
+    std::bitset<32> readBytes(std::bitset<32> address, unsigned int N) {
+        std::bitset<32> bytes;
+        std::bitset<32> current_address = address;
 
-    // This is dumb
-    std::bitset<32> readUpperHalfWord(std::bitset<32> address) {
-        std::bitset<8> b1 = data.at(address);
-        std::bitset<8> b2 = data.at(incrementAddress(address));
-
-        return std::bitset<32>(b2.to_string() + b1.to_string() + "0000000000000000");
-    }
-
-    std::bitset<32> readUpperByte(std::bitset<32> address) {
-        return std::bitset<32>(data.at(address).to_string() + "00000000000000000000000000000000");
+        for (int i = 0; i < N; i++) {
+            bytes = bytes | (std::bitset<32>(data[current_address].to_ulong()) << (i * 8));
+            current_address = incrementAddress(current_address);
+        }
+        
+        return bytes;
     }
 
     // Write functions

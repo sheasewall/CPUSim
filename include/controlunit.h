@@ -8,6 +8,7 @@
 #include "registerfile.h"
 #include "memoryfile.h"
 #include "instructionfile.h"
+#include "exceptions.h"
 #include <iostream>
 #include <map>
 #include <fstream>
@@ -40,7 +41,10 @@ public:
     ~ControlUnit() {}
 
     void step();
-    void print();
+
+    // These functions are for debugging the implementation and are
+    // not intended to model any real-world functionality. 
+    void print(bool print_instructions = false, bool print_registers = false, bool print_data = false);
     void dump();
 
 private:

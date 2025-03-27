@@ -218,7 +218,7 @@ namespace RISC
         RType::execute(p_alu, pc);
     }
 
-    void Sll::execute(std::shared_ptr<ALU> p_alu, std::bitset<32>& pc)
+    void ShiftLeftLogi::execute(std::shared_ptr<ALU> p_alu, std::bitset<32>& pc)
     {
         // Select only the lower 5 bits as per RISC-V specs.
         // Should technically be redundant and only a timesaver
@@ -227,7 +227,7 @@ namespace RISC
         RType::execute(p_alu, pc);
     }
 
-    void Srl::execute(std::shared_ptr<ALU> p_alu, std::bitset<32>& pc)
+    void ShiftRightLogi::execute(std::shared_ptr<ALU> p_alu, std::bitset<32>& pc)
     {
         // Select only the lower 5 bits as per RISC-V specs.
         // Should technically be redundant and only a timesaver
@@ -236,7 +236,7 @@ namespace RISC
         RType::execute(p_alu, pc);
     }
 
-    void Sra::execute(std::shared_ptr<ALU> p_alu, std::bitset<32>& pc)
+    void ShiftRightArith::execute(std::shared_ptr<ALU> p_alu, std::bitset<32>& pc)
     {
         // Select only the lower 5 bits as per RISC-V specs.
         // Should technically be redundant and only a timesaver
@@ -245,14 +245,14 @@ namespace RISC
         RType::execute(p_alu, pc);
     }
 
-    void Slt::execute(std::shared_ptr<ALU> p_alu, std::bitset<32>& pc)
+    void SetLessThan::execute(std::shared_ptr<ALU> p_alu, std::bitset<32>& pc)
     {
         // bool to bitset<32> implicit conversion
         result = p_alu->lessThanSigned(rs1_val, rs2_val);
         RType::execute(p_alu, pc);
     }
 
-    void Sltu::execute(std::shared_ptr<ALU> p_alu, std::bitset<32>& pc)
+    void SetLessThanUnsigned::execute(std::shared_ptr<ALU> p_alu, std::bitset<32>& pc)
     {
         // bool to bitset<32> implicit conversion
         result = p_alu->lessThanUnsigned(rs1_val, rs2_val);
@@ -260,30 +260,30 @@ namespace RISC
     }
 
     // I instructions
-    void Addi::execute(std::shared_ptr<ALU> p_alu, std::bitset<32>& pc) {
+    void AddImm::execute(std::shared_ptr<ALU> p_alu, std::bitset<32>& pc) {
         result = p_alu->add(rs1_val, imm_val);
         IType::execute(p_alu, pc);
     }
 
-    void Xori::execute(std::shared_ptr<ALU> p_alu, std::bitset<32>& pc)
+    void XorImm::execute(std::shared_ptr<ALU> p_alu, std::bitset<32>& pc)
     {
         result = p_alu->bitwiseXor(rs1_val, imm_val);
         IType::execute(p_alu, pc);
     }
 
-    void Ori::execute(std::shared_ptr<ALU> p_alu, std::bitset<32>& pc)
+    void OrImm::execute(std::shared_ptr<ALU> p_alu, std::bitset<32>& pc)
     {
         result = p_alu->bitwiseOr(rs1_val, imm_val);
         IType::execute(p_alu, pc);
     }
 
-    void Andi::execute(std::shared_ptr<ALU> p_alu, std::bitset<32>& pc)
+    void AndImm::execute(std::shared_ptr<ALU> p_alu, std::bitset<32>& pc)
     {
         result = p_alu->bitwiseAnd(rs1_val, imm_val);
         IType::execute(p_alu, pc);
     }
 
-    void Slli::execute(std::shared_ptr<ALU> p_alu, std::bitset<32>& pc)
+    void ShiftLeftLogiImm::execute(std::shared_ptr<ALU> p_alu, std::bitset<32>& pc)
     {
         // Select only the lower 5 bits as per RISC-V specs.
         // Not redundant, as upper 7 bits are used as a funct7
@@ -291,7 +291,7 @@ namespace RISC
         result = p_alu->hardwareLeftShift(rs1_val, imm_val);
         IType::execute(p_alu, pc);
     }
-    void Srli::execute(std::shared_ptr<ALU> p_alu, std::bitset<32>& pc)
+    void ShiftRightLogiImm::execute(std::shared_ptr<ALU> p_alu, std::bitset<32>& pc)
     {
         // Select only the lower 5 bits as per RISC-V specs.
         // Not redundant, as upper 7 bits are used as a funct7
@@ -299,7 +299,7 @@ namespace RISC
         result = p_alu->hardwareRightShift(rs1_val, imm_val);
         IType::execute(p_alu, pc);
     }
-    void Srai::execute(std::shared_ptr<ALU> p_alu, std::bitset<32>& pc)
+    void ShiftRightArithImm::execute(std::shared_ptr<ALU> p_alu, std::bitset<32>& pc)
     {
         // Select only the lower 5 bits as per RISC-V specs.
         // Not redundant, as upper 7 bits are used as a funct7
@@ -307,17 +307,28 @@ namespace RISC
         result = p_alu->arithmeticRightShift(rs1_val, imm_val);
         IType::execute(p_alu, pc);
     }
-    void Slti::execute(std::shared_ptr<ALU> p_alu, std::bitset<32>& pc)
+    void SetLessThanImm::execute(std::shared_ptr<ALU> p_alu, std::bitset<32>& pc)
     {
         // bool to bitset<32> implicit conversion
         result = p_alu->lessThanSigned(rs1_val, imm_val);
         IType::execute(p_alu, pc);
     }
-    void Sltiu::execute(std::shared_ptr<ALU> p_alu, std::bitset<32>& pc)
+    void SetLessThanImmUnsigned::execute(std::shared_ptr<ALU> p_alu, std::bitset<32>& pc)
     {
         // bool to bitset<32> implicit conversion
         result = p_alu->lessThanUnsigned(rs1_val, imm_val);
         IType::execute(p_alu, pc);
+    }
+
+    void Ecall::execute(std::shared_ptr<ALU> p_alu, std::bitset<32>& pc)
+    {
+        throw EcallTrap();
+    }
+
+    void Ebreak::execute(std::shared_ptr<ALU> p_alu, std::bitset<32>& pc)
+    {
+        IType::execute(p_alu, pc);
+        throw EbreakTrap();
     }
 
     // S instructions
@@ -425,7 +436,7 @@ namespace RISC
 
     void LoadWord::accessMemory(std::shared_ptr<MemoryFile> p_data_file)
     {
-        result = p_data_file->readWord(result);
+        result = p_data_file->readBytes(result, 4);
     }
 
     void LoadHalfWord::execute(std::shared_ptr<ALU> p_alu, std::bitset<32>& pc)
@@ -436,7 +447,8 @@ namespace RISC
 
     void LoadHalfWord::accessMemory(std::shared_ptr<MemoryFile> p_data_file)
     {
-        result = p_data_file->readHalfWord(result);
+        result = p_data_file->readBytes(result, 2);
+        result = p_data_file->signExtendHalfWordCircuit(result);
     }
 
     void LoadByte::execute(std::shared_ptr<ALU> p_alu, std::bitset<32>& pc)
@@ -447,29 +459,30 @@ namespace RISC
 
     void LoadByte::accessMemory(std::shared_ptr<MemoryFile> p_data_file)
     {
-        result = p_data_file->readByte(result);
+        result = p_data_file->readBytes(result, 1);
+        result = p_data_file->signExtendByteCircuit(result);
     }
 
-    void LoadUpperHalfWord::execute(std::shared_ptr<ALU> p_alu, std::bitset<32>& pc)
+    void LoadUnsignedHalfWord::execute(std::shared_ptr<ALU> p_alu, std::bitset<32>& pc)
     {
         result = p_alu->add(rs1_val, imm_val);
         IType::execute(p_alu, pc);
     }
 
-    void LoadUpperHalfWord::accessMemory(std::shared_ptr<MemoryFile> p_data_file)
+    void LoadUnsignedHalfWord::accessMemory(std::shared_ptr<MemoryFile> p_data_file)
     {
-        result = p_data_file->readUpperHalfWord(result);
+        result = p_data_file->readBytes(result, 2);
     }
 
-    void LoadUpperByte::execute(std::shared_ptr<ALU> p_alu, std::bitset<32>& pc)
+    void LoadUnsignedByte::execute(std::shared_ptr<ALU> p_alu, std::bitset<32>& pc)
     {
         result = p_alu->add(rs1_val, imm_val);
         IType::execute(p_alu, pc);
     }
 
-    void LoadUpperByte::accessMemory(std::shared_ptr<MemoryFile> p_data_file)
+    void LoadUnsignedByte::accessMemory(std::shared_ptr<MemoryFile> p_data_file)
     {
-        result = p_data_file->readUpperByte(result);
+        result = p_data_file->readBytes(result, 1);
     }
 
 }
