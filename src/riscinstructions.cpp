@@ -423,8 +423,8 @@ namespace RISC
 
     void AddUpperImmedateToPC::execute(std::shared_ptr<ALU> p_alu, std::bitset<32>& pc)
     {
-        result = imm_val;
-        pc = p_alu->add(pc, result);
+        result = p_alu->add(pc, imm_val);
+        pc = p_alu->add(pc, std::bitset<32>(4));
     }
 
     // Load instructions

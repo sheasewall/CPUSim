@@ -289,10 +289,10 @@ std::bitset<32> Translator::generateFenceType(std::string instruction)
 // TODO: Implement system translation
 std::bitset<32> Translator::generateSystemType(std::string instruction)
 {
-    if (instruction == "ecall;") {
+    if (instruction.substr(0, 6) == "ecall;") {
         return std::bitset<32>(0b00000000000000000000000001110011);
     }
-    else if (instruction == "ebreak;") {
+    else if (instruction.substr(0, 7) == "ebreak;") {
         return std::bitset<32>(0b00000000000100000000000001110011);
     }
     else {
@@ -364,17 +364,13 @@ void Translator::translateFile(std::string filename)
         throw std::runtime_error("Could not open output file: " + output_file_name + ".bin");
     }
 
-    std::stringstream output;
-
-    unsigned int line_number = 0;
     std::string instruction;
     while (std::getline(input_file, instruction)) {
         std::bitset<32> binary_instruction = translate(instruction);
 
         for (int i = 3; 0 <= i; i--) {
             std::bitset<8> current_byte = std::bitset<8>(binary_instruction.to_string().substr(i * 8, 8));
-            output_file << line_number << " " << current_byte << std::endl;
-            line_number++;
+            output_file.write(reinterpret_cast<const char*>(&current_byte), 1);
         }
     }
 }

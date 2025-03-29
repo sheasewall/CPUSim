@@ -63,7 +63,7 @@ public:
             bytes = bytes | (std::bitset<32>(data[current_address].to_ulong()) << (i * 8));
             current_address = incrementAddress(current_address);
         }
-        
+
         return bytes;
     }
 
@@ -96,8 +96,10 @@ public:
         writeBytes<1>(address, byte);
     }
 
-    void print() {
-        File::print("Address ");
+    void print(std::string prefix = "") {
+        for (auto& datum : data) {
+            std::cout << "Address " << std::setw(8) << std::setfill('0') << std::dec << datum.first.to_ulong() << ": " << std::setw(2) << std::setfill('0') << std::hex << datum.second.to_ulong() << std::endl;
+        }
     }
 };
 

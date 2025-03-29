@@ -27,7 +27,23 @@ public:
     }
 
     void print() {
-        File::print("Register ");
+        for (auto& datum : data) {
+            std::cout << "Register " << std::setw(2) << std::setfill(' ') << std::dec << datum.first.to_ulong() << ": " << std::setw(8) << std::setfill('0') << std::hex << datum.second.to_ulong() << std::endl;
+        }
+    }
+
+    void dump() {
+        std::string dump_memory_file = memory_file + ".dump";
+        std::ofstream file(dump_memory_file);
+        if (!file.is_open()) {
+            throw std::runtime_error("Could not open memory file: " + dump_memory_file);
+        }
+
+        // This should be ordered
+        for (auto& datum : data) {
+            auto value = datum.second.to_ulong();
+            file.write(reinterpret_cast<const char*>(&value), 4);
+        }
     }
 };
 

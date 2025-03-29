@@ -3,12 +3,12 @@
 
 int main(int, char**)
 {
-    Translator t;
-    t.translateFile(std::string(MEMORY_FILES_DIR) + "/program");
+    // Translator t;
+    // t.translateFile(std::string(DATA_FILES_DIR) + "/program");
 
-    std::string instruction_file = std::string(MEMORY_FILES_DIR) + "/program.bin";
-    std::string register_file = std::string(DATA_FILES_DIR) + "/registers.txt";
-    std::string data_file = std::string(DATA_FILES_DIR) + "/data.txt";
+    std::string instruction_file = std::string(DATA_FILES_DIR) + "/output.bin";
+    std::string register_file = std::string(DATA_FILES_DIR) + "/registers.bin";
+    std::string data_file = std::string(DATA_FILES_DIR) + "/data.bin";
     ControlUnit cu(instruction_file, register_file, data_file);
 
     std::string input;
@@ -23,20 +23,28 @@ int main(int, char**)
         std::cout << "Enter command (step, print, dump, quit): ";
         std::cout.flush();
         std::getline(std::cin, input);
-    
+
         std::istringstream iss(input);
         std::string command;
-        iss >> command; 
-    
+        iss >> command;
+
         if (command == "step" || command == "s")
         {
             try {
                 cu.step();
-            } catch (const RiscTrapException& e) {
-                cu.print();
-                std::cout << e.what() << std::endl;
-            } catch (...) {
-                std::cout << "Error executing instruction" << std::endl;
+            }
+            catch (const RiscTrapException& e) {
+                cu.print(true, true, true);
+                std::cout << "RiscTrapException caught: " << e.what() << std::endl;
+            }
+            catch (const std::exception& e) {
+                cu.print(true, true, true);
+                std::cout << "Standard exception caught: " << e.what() << std::endl;
+                throw e;
+            }
+            catch (...) {
+                cu.print(true, true, true);
+                std::cout << "Unknown error occurred while executing instruction" << std::endl;
             }
         }
         else if (command == "print" || command == "p")
@@ -54,15 +62,29 @@ int main(int, char**)
             while (true) {
                 try {
                     cu.step();
-                } catch (const EbreakTrap& e) {
+                }
+                catch (const EbreakTrap& e) {
                     cu.print(false, true, true);
                     std::cout << e.what() << std::endl;
                     break;
-                } 
-                catch (...) {
-                    std::cout << "Error executing instruction" << std::endl;
+                }
+                catch (const std::exception& e) {
+                    cu.print(true, true, true);
+                    std::cout << "Standard exception caught: " << e.what() << std::endl;
                     break;
                 }
+                catch (...) {
+                    cu.print(true, true, true);
+                    std::cout << "Unknown error occurred while executing instruction" << std::endl;
+                }
+            }
+        }
+        else if (command.substr(0, 5) == "cycle" || command.substr(0, 1) == "c")
+        {
+            int cycles;
+            iss >> cycles;
+            for (int i = 0; i < cycles; i++) {
+                cu.step();
             }
         }
         else if (command == "quit" || command == "q")

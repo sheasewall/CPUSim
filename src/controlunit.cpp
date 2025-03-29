@@ -11,7 +11,9 @@ void ControlUnit::step() {
 
 void ControlUnit::print(bool print_instructions, bool print_registers, bool print_data)
 {
-    std::cout << "Cycle: " << cycles << std::endl;
+    std::cout << "Cycle: " << std::dec << cycles << std::endl;
+    std::cout << "PC: " << std::setw(8) << std::setfill('0') << std::hex << pc.to_ulong() << std::endl;
+    std::cout << "Last Executed Instruction: " << std::setw(8) << std::setfill('0') << std::hex << current_instruction.to_ulong() << std::endl;
     if (print_instructions) {
         std::cout << "Instructions: " << std::endl;
         p_instruction_file->print();
@@ -219,7 +221,7 @@ void ControlUnit::decode() {
         p_current_instruction = std::unique_ptr<RISC::Instruction>(new RISC::LoadUpperImmediate(current_instruction));
         break;
     }
-    case 0b0100111: {
+    case 0b0010111: {
         // UType (AUIPC)
         p_current_instruction = std::unique_ptr<RISC::Instruction>(new RISC::AddUpperImmedateToPC(current_instruction));
         break;
