@@ -18,7 +18,7 @@ void ControlUnit::dump()
 
 void ControlUnit::signature()
 {
-    std::ofstream signature_file("DUT-cpusim.signature");
+    std::ofstream signature_file("DUT-rv32sim.signature");
     std::string signature = p_data_file->signature();
     
     // This whole thing is hacky and should be replaced with a better solution

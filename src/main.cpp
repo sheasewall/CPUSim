@@ -20,12 +20,13 @@ int main(int argc, char** argv)
             return 0;
         }
         catch (const EbreakTrap& e) {
-            // Dump and continue on ebreak
-            cu.dump();
+            // Save signature for debugging and continue on ebreak
+            cu.signature();
         }
         catch (const std::exception& e) {
-            // Dump signature and exit on other exceptions
+            // Save signature and dump state and exit on other exceptions
             std::cerr << "Error: " << e.what() << std::endl;
+            cu.signature();
             cu.dump();
             return 1;
         }

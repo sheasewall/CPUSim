@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.10)
-project(CPUSim VERSION 0.2.0 LANGUAGES CXX)
+project(rv32sim VERSION 0.5.0 LANGUAGES CXX)
 
 set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_STANDARD_REQUIRED True)
@@ -15,17 +15,22 @@ add_library(cpu_lib
 )
 
 # Link the main executable with the library
-add_executable(CPUSim
+add_executable(rv32sim
     src/main.cpp
     include/file.hpp
 )
-target_link_libraries(CPUSim cpu_lib)
+target_link_libraries(rv32sim cpu_lib)
+
+set_directory_properties(PROPERTIES
+  CMAKE_SUPPRESS_DEVELOPER_WARNINGS TRUE
+)
 
 # Setup Google Test
 include(FetchContent)
 FetchContent_Declare(
     googletest
     URL https://github.com/google/googletest/archive/release-1.11.0.zip
+    DOWNLOAD_EXTRACT_TIMESTAMP TRUE
 )
 set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
 FetchContent_MakeAvailable(googletest)
@@ -58,3 +63,4 @@ gtest_discover_tests(alu_tests)
 gtest_discover_tests(controlunit_tests)
 
 add_compile_definitions(MEMORY_FILES_DIR="${PROJECT_SOURCE_DIR}/tests/memory")
+add_compile_definitions(DATA_FILES_DIR="${PROJECT_SOURCE_DIR}/data")
