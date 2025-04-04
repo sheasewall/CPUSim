@@ -39,6 +39,17 @@ public:
             std::cout << "Instruction " << std::setw(8) << std::setfill('0') << std::dec << i << ": " << std::setw(8) << std::setfill('0') << std::hex << instruction.to_ulong() << std::endl;
         }
     }
+
+    void dump() {
+        File::dump(1, "instr");
+    }
+
+    void dump(std::bitset<32> pc) {
+        InstructionFile::dump();
+        std::ofstream dump_file("instr.dump", std::ios::app);
+        u_long value = pc.to_ulong();
+        dump_file.write(reinterpret_cast<const char*>(&value), 4);
+    }
 };
 
 #endif // INSTRUCTIONFILE_H

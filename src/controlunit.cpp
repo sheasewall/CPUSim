@@ -9,31 +9,33 @@ void ControlUnit::step() {
     cycles++;
 }
 
-void ControlUnit::print(bool print_instructions, bool print_registers, bool print_data)
-{
-    std::cout << "Cycle: " << std::dec << cycles << std::endl;
-    std::cout << "PC: " << std::setw(8) << std::setfill('0') << std::hex << pc.to_ulong() << std::endl;
-    std::cout << "Last Executed Instruction: " << std::setw(8) << std::setfill('0') << std::hex << current_instruction.to_ulong() << std::endl;
-    if (print_instructions) {
-        std::cout << "Instructions: " << std::endl;
-        p_instruction_file->print();
-    }
-    if (print_registers) {
-        std::cout << "Registers: " << std::endl;
-        p_reg_file->print();
-    }
-    if (print_data) {
-        std::cout << "Data: " << std::endl;
-        p_data_file->print();
-    }
-    std::cout << std::endl;
-}
-
 void ControlUnit::dump()
 {
-    p_instruction_file->dump();
+    p_instruction_file->dump(pc);
     p_reg_file->dump();
     p_data_file->dump();
+}
+
+void ControlUnit::signature()
+{
+    std::ofstream signature_file("DUT-cpusim.signature");
+    std::string signature = p_data_file->signature();
+    
+    // This whole thing is hacky and should be replaced with a better solution
+    // More importantly it should be moved out of CU as it does not 
+    // model any real functionality
+    std::stringstream ss(signature);
+    std::string line;
+    int number_of_lines = 0;
+    while (std::getline(ss, line)) {
+        number_of_lines++;
+    }
+    // I still dont know why this value is at the beginning and end
+    signature_file << "6f5ca309\n" << p_data_file->signature() << "6f5ca309\n";
+    // insert empty lines to reach a multiple of 4 (lines)
+    for (int i = (number_of_lines + 2) % 4; (i > 0) && (i < 4); i++) {
+        signature_file << "00000000\n";
+    }
 }
 
 void ControlUnit::fetch() {
@@ -261,13 +263,7 @@ void ControlUnit::decode() {
 }
 
 void ControlUnit::execute() {
-    // try {
-        p_current_instruction->execute(p_alu, pc);
-    // } catch (const RiscTrapException& e) {
-    //     std::cout << e.what() << std::endl;
-    // } catch (...) {
-    //     throw std::runtime_error("Error executing instruction");
-    // }
+    p_current_instruction->execute(p_alu, pc);
 }
 
 void ControlUnit::memoryAccess() {

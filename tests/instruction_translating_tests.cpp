@@ -44,17 +44,17 @@ const std::map<std::string, std::bitset<32>> translationReference{
     { "sra x2, x20, x0;", 0b01000000000010100101000100110011 },
     { "or x5, x10, x15;", 0b00000000111101010110001010110011 },
     { "and x0, x0, x0;", 0b00000000000000000111000000110011 },
-    // { "ecall;", 0b00000000000000000000000001110011 },
-    // { "ebreak;", 0b00000000000100000000000001110011 },
+    { "ecall;", 0b00000000000000000000000001110011 },
+    { "ebreak;", 0b00000000000100000000000001110011 },
     // { "fence iw, ior;", 0b00001001111000000000000000001111 },
 };
 
-// TEST(TranslatorTest, TranslateInstrStrings) {
-//     for (const auto& entry : translationReference) {
-//         std::cout << entry.first << std::endl;
-//         EXPECT_EQ(t.translate(entry.first), entry.second) << entry.first;
-//     }
-// }
+TEST(TranslatorTest, TranslateInstrStrings) {
+    for (const auto& entry : translationReference) {
+        std::cout << entry.first << std::endl;
+        EXPECT_EQ(t.translate(entry.first), entry.second) << entry.first;
+    }
+}
 
 TEST(TranslatorTest, TranslateFile) {
     t.translateFile(std::string(MEMORY_FILES_DIR) + "/test");

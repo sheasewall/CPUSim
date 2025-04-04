@@ -12,7 +12,7 @@ public:
 
 class EcallTrap : public RiscTrapException {
 public:
-    EcallTrap() : RiscTrapException("ecall executed") { std::exit(0); }
+    EcallTrap() : RiscTrapException("ecall executed") {}
 };
 
 class EbreakTrap : public RiscTrapException {

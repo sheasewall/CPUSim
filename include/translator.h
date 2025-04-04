@@ -6,6 +6,10 @@
 #include <fstream>
 #include <sstream>
 
+// Explicit include needed for compiling in Docker container
+#include <functional>
+#include <vector>
+
 // This could be achieved in a more OO way 
 // using polymorphism similar to how Instructions
 // are represented in the simulator code

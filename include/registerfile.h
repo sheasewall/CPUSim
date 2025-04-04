@@ -9,7 +9,7 @@
 
 class RegisterFile : public File<5, 32> {
 public:
-    RegisterFile(std::string _memory_file) : File(_memory_file) {
+    RegisterFile(std::string _memory_file = "reg") : File(_memory_file) {
         for (int i = 0; i < 32; i++) {
             data.insert({ std::bitset<5>(i), std::bitset<32>(0) });
         }
@@ -33,17 +33,7 @@ public:
     }
 
     void dump() {
-        std::string dump_memory_file = memory_file + ".dump";
-        std::ofstream file(dump_memory_file);
-        if (!file.is_open()) {
-            throw std::runtime_error("Could not open memory file: " + dump_memory_file);
-        }
-
-        // This should be ordered
-        for (auto& datum : data) {
-            auto value = datum.second.to_ulong();
-            file.write(reinterpret_cast<const char*>(&value), 4);
-        }
+        File::dump(4, "reg");
     }
 };
 

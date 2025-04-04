@@ -29,23 +29,22 @@ private:
     std::shared_ptr<MemoryFile> p_data_file;
 
 public:
-    ControlUnit(std::string instruction_file, std::string register_file, std::string data_file) {
+    ControlUnit(std::string bin_file) {
         cycles = 0;
         pc = std::bitset<32>(0);
-        p_instruction_file = std::make_shared<InstructionFile>(instruction_file);
+        p_instruction_file = std::make_shared<InstructionFile>(bin_file);
         p_imm_gen = std::make_shared<ImmGen>();
-        p_reg_file = std::make_shared<RegisterFile>(register_file);
+        p_reg_file = std::make_shared<RegisterFile>();
         p_alu = std::make_shared<ALU>();
-        p_data_file = std::make_shared<MemoryFile>(data_file);
+        p_data_file = std::make_shared<MemoryFile>();
     }
     ~ControlUnit() {}
 
     void step();
 
-    // These functions are for debugging the implementation and are
-    // not intended to model any real-world functionality. 
-    void print(bool print_instructions = false, bool print_registers = false, bool print_data = false);
+    // For debugging
     void dump();
+    void signature();
 
 private:
     void fetch();

@@ -12,7 +12,7 @@
 
 class MemoryFile : public File<32, 8> {
 public:
-    MemoryFile(std::string _memory_file) : File(_memory_file) {}
+    MemoryFile(std::string _memory_file = "mem") : File(_memory_file) {}
 
     // Could be handled by the ALU or an "add circuit"
     static std::bitset<32> incrementAddress(std::bitset<32> addr) {
@@ -96,10 +96,33 @@ public:
         writeBytes<1>(address, byte);
     }
 
+
+
     void print(std::string prefix = "") {
         for (auto& datum : data) {
             std::cout << "Address " << std::setw(8) << std::setfill('0') << std::dec << datum.first.to_ulong() << ": " << std::setw(2) << std::setfill('0') << std::hex << datum.second.to_ulong() << std::endl;
         }
+    }
+
+    void dump() { 
+        File::dump(1, "data");
+    }
+
+    std::string signature() {
+        int i = 0;
+        std::stringstream stream;
+        std::bitset<32> final_memory;
+        for (auto& datum : data) {
+            std::bitset<8> mem = datum.second;
+            final_memory |= mem.to_ulong() << (i * 8);
+            i++;
+            if (i == 4) {
+                stream << std::setw(8) << std::setfill('0') << std::hex << final_memory.to_ulong() << std::endl;
+                final_memory = 0;
+                i = 0;
+            }
+        }
+        return stream.str();
     }
 };
 
