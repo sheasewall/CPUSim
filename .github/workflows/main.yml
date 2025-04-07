@@ -1,0 +1,8 @@
+name: Workflow Test
+on: push
+
+jobs:
+  docker:
+    runs-on: [self-hosted, linux, ARM64]
+    steps:
+      - run: echo 'hi'
