@@ -7,3 +7,6 @@ jobs:
     steps:
       - run: pwd
       - run: docker run --entrypoint "validate" -t rv32sim-container:latest
+      - run: docker cp github-runner:/home/riscofuser/rv32sim_validation/riscof_work/report.html .
+      - run: docker rm github-runner
+      - run: echo 'Testing' >> #GITHUB_STEP_SUMMARY
