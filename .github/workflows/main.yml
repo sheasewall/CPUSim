@@ -5,4 +5,4 @@ jobs:
   docker:
     runs-on: [self-hosted, ARM64]
     steps:
-      - run: echo 'hi'
+      - run: pwd
