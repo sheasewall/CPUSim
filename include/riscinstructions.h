@@ -444,6 +444,13 @@ namespace RISC {
         void execute(std::shared_ptr<ALU> p_alu, std::bitset<32>& pc) override;
         void writeBack(std::shared_ptr<RegisterFile> p_reg_file) override;
     };
+
+    // fence
+    // this is currently a no op as our simulator is single hart
+    struct Fence : Instruction {
+        Fence(std::bitset<32> instruction) : Instruction(instruction) {}
+        void execute(std::shared_ptr<ALU> p_alu, std::bitset<32>& pc) override;
+    };
 }
 
 #endif // RISCIINSTRUCTIONS_H

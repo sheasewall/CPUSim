@@ -109,7 +109,12 @@ public:
     }
 
     std::string signature() {
+        //read until 0x6f5ca309
+        //then start writing
+        //until 0x6f5ca309
+        //then stop writing
         int i = 0;
+        bool should_write = false;
         std::stringstream stream;
         std::bitset<32> final_memory;
         for (auto& datum : data) {
@@ -117,7 +122,16 @@ public:
             final_memory |= mem.to_ulong() << (i * 8);
             i++;
             if (i == 4) {
-                stream << std::setw(8) << std::setfill('0') << std::hex << final_memory.to_ulong() << std::endl;
+                if (final_memory == 0x6f5ca309) {
+                    if (should_write) {
+                        stream << std::setw(8) << std::setfill('0') << std::hex << final_memory.to_ulong() << std::endl;
+                        break;
+                    }
+                    should_write = true;
+                }
+                if (should_write) {
+                    stream << std::setw(8) << std::setfill('0') << std::hex << final_memory.to_ulong() << std::endl;
+                }
                 final_memory = 0;
                 i = 0;
             }

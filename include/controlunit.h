@@ -36,7 +36,7 @@ public:
         p_imm_gen = std::make_shared<ImmGen>();
         p_reg_file = std::make_shared<RegisterFile>();
         p_alu = std::make_shared<ALU>();
-        p_data_file = std::make_shared<MemoryFile>();
+        p_data_file = std::make_shared<MemoryFile>(bin_file);
     }
     ~ControlUnit() {}
 

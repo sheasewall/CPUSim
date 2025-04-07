@@ -30,10 +30,9 @@ void ControlUnit::signature()
     while (std::getline(ss, line)) {
         number_of_lines++;
     }
-    // I still dont know why this value is at the beginning and end
-    signature_file << "6f5ca309\n" << p_data_file->signature() << "6f5ca309\n";
+    signature_file << p_data_file->signature();
     // insert empty lines to reach a multiple of 4 (lines)
-    for (int i = (number_of_lines + 2) % 4; (i > 0) && (i < 4); i++) {
+    for (int i = number_of_lines % 4; (i > 0) && (i < 4); i++) {
         signature_file << "00000000\n";
     }
 }
@@ -253,6 +252,11 @@ void ControlUnit::decode() {
         else {
             throw std::runtime_error("Unknown imm: " + s_instruction.imm.to_string());
         }
+        break;
+    }
+    case 0b0001111: {
+        // FENCE
+        p_current_instruction = std::unique_ptr<RISC::Instruction>(new RISC::Fence(current_instruction));
         break;
     }
     default:

@@ -485,4 +485,10 @@ namespace RISC
         result = p_data_file->readBytes(result, 1);
     }
 
+
+    void RISC::Fence::execute(std::shared_ptr<ALU> p_alu, std::bitset<32>& pc)
+    {
+        // No operation
+        pc = p_alu->add(pc, std::bitset<32>(4));
+    }
 }
