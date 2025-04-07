@@ -6,3 +6,5 @@ jobs:
     runs-on: [self-hosted, ARM64]
     steps:
       - run: pwd
+      - run: cp ../../../../../riscof.tar.gz .
+      - run: ls
