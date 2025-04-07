@@ -6,5 +6,4 @@ jobs:
     runs-on: [self-hosted, ARM64]
     steps:
       - run: pwd
-      - run: cp /Users/sheasewall/Files/Code/riscv/riscof-container/riscof.tar.gz .
-      - run: ls
+      - run: docker run --entrypoint "validate" -t rv32sim-container:latest
