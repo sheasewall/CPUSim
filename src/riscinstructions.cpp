@@ -486,9 +486,9 @@ namespace RISC
     }
 
 
-    void RISC::Fence::execute(std::shared_ptr<ALU> p_alu, std::bitset<32>& pc)
-    {
-        // No operation
-        pc = p_alu->add(pc, std::bitset<32>(4));
-    }
+    // void RISC::Fence::execute(std::shared_ptr<ALU> p_alu, std::bitset<32>& pc)
+    // {
+    //     // No operation
+    //     pc = p_alu->add(pc, std::bitset<32>(4));
+    // }
 }
