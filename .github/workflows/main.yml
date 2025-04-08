@@ -4,10 +4,10 @@ on: push
 jobs:
   docker:
     runs-on: [self-hosted, ARM64]
-    continue-on-error: True
     steps:
       - run: pwd
       - run: docker run --entrypoint "validate" -t rv32sim-container:latest
+        continue-on-error: True
       - run: docker cp github-runner:/home/riscofuser/rv32sim_validation/riscof_work/report.html .
       - run: docker rm github-runner
       - uses: actions/upload-artifact@v4
