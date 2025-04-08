@@ -16,6 +16,7 @@ jobs:
           path: /Users/sheasewall/Files/Code/riscv/rv32sim/actions-runner/_work/CPUSim/CPUSim/report.html
 
   display:
+    needs: docker
     runs-on: [self-hosted, ARM64]
     steps:
       - uses: actions/download-artifact@v4
