@@ -22,6 +22,6 @@ jobs:
       - uses: actions/download-artifact@v4
         with:
           name: test_results
-      - run: grep -Eo '[0-9]+Passed' report.html >> $GITHUB_STEP_SUMMARY
-      - run: grep -Eo '[0-9]+Failed' report.html >> $GITHUB_STEP_SUMMARY
+      - run: echo "Passed\:$(grep -Eo '[0-9]+Passed' report.html | grep -Eo '[0-9]+')" >> $GITHUB_STEP_SUMMARY 
+      - run: echo "Failed\:$(grep -Eo '[0-9]+Failed' report.html | grep -Eo '[0-9]+')" >> $GITHUB_STEP_SUMMARY 
       
