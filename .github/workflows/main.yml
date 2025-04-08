@@ -14,3 +14,13 @@ jobs:
         with:
           name: test_results
           path: /Users/sheasewall/Files/Code/riscv/rv32sim/actions-runner/_work/CPUSim/CPUSim/report.html
+
+  display:
+    runs-on: [self-hosted, ARM64]
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: test_results
+      - run: grep -Eo '[0-9]+Passed' report.html >> $GITHUB_STEP_SUMMARY
+      - run: grep -Eo '[0-9]+Failed' report.html >> $GITHUB_STEP_SUMMARY
+      
