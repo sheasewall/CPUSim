@@ -6,8 +6,8 @@ jobs:
     runs-on: [self-hosted, ARM64]
     steps:
       - run: pwd
-      - run: /Users/sheasewall/Files/Code/riscv/rv32sim-container/build_image.sh ghrlatest
-      - run: docker run --entrypoint "validate" --name "github-runner" -t rv32sim-container:ghrlatest 
+      - run: /Users/sheasewall/Files/Code/riscv/rv32sim-container/build_image.sh "$GITHUB_REF_NAME"-ghrlatest
+      - run: docker run --entrypoint "validate" --name "github-runner" -t rv32sim-container:"$GITHUB_REF_NAME"-ghrlatest 
         continue-on-error: True
       - run: docker cp github-runner:/home/riscofuser/rv32sim_validation/riscof_work/report.html .
       - run: docker rm github-runner
@@ -20,8 +20,6 @@ jobs:
     needs: docker
     runs-on: [self-hosted, ARM64]
     steps:
-      - run: echo "|   |   |" >> "$GITHUB_STEP_SUMMARY"
-      - run: echo "|---|---|" >> "$GITHUB_STEP_SUMMARY"
-      - run: echo "| Passed | $(grep -Eo '[0-9]+Passed' report.html | grep -Eo '[0-9]+') |" >> "$GITHUB_STEP_SUMMARY"
-      - run: echo "| Failed | $(grep -Eo '[0-9]+Failed' report.html | grep -Eo '[0-9]+') |" >> "$GITHUB_STEP_SUMMARY"
+      - run: echo "Passed:$(grep -Eo '[0-9]+Passed' report.html | grep -Eo '[0-9]+')" >> "$GITHUB_STEP_SUMMARY"
+      - run: echo "Failed:$(grep -Eo '[0-9]+Failed' report.html | grep -Eo '[0-9]+')" >> "$GITHUB_STEP_SUMMARY"
       
