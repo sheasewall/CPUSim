@@ -6,7 +6,7 @@ jobs:
     runs-on: [self-hosted, ARM64]
     steps:
       - run: pwd
-      - run: docker run --entrypoint "validate" -t rv32sim-container:latest
+      - run: docker run --entrypoint "validate" --name "github-runner" -t rv32sim-container:latest 
         continue-on-error: True
       - run: docker cp github-runner:/home/riscofuser/rv32sim_validation/riscof_work/report.html .
       - run: docker rm github-runner
