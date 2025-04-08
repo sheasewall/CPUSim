@@ -19,9 +19,7 @@ jobs:
     needs: docker
     runs-on: [self-hosted, ARM64]
     steps:
-      - uses: actions/download-artifact@v4
-        with:
-          name: test_results
-      - run: echo "Passed\:$(grep -Eo '[0-9]+Passed' report.html | grep -Eo '[0-9]+')" >> $GITHUB_STEP_SUMMARY 
-      - run: echo "Failed\:$(grep -Eo '[0-9]+Failed' report.html | grep -Eo '[0-9]+')" >> $GITHUB_STEP_SUMMARY 
+      - run: echo "|--------|-----|
+      - run: echo "| Passed | $(grep -Eo '[0-9]+Passed' report.html | grep -Eo '[0-9]+') |" >> $GITHUB_STEP_SUMMARY 
+      - run: echo "| Failed | $(grep -Eo '[0-9]+Failed' report.html | grep -Eo '[0-9]+') |" >> $GITHUB_STEP_SUMMARY 
       
