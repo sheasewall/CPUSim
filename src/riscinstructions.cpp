@@ -179,7 +179,7 @@ namespace RISC
     {
         result = p_alu->add(pc, std::bitset<32>(4));
         std::bitset<32> offset = p_alu->add(rs1_val, imm_val);
-        pc = p_alu->add(pc, offset);
+        pc = offset;
     }
 
     void JumpAndLinkReg::writeBack(std::shared_ptr<RegisterFile> p_reg_file)

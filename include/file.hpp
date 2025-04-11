@@ -109,6 +109,16 @@ public:
             file.write(reinterpret_cast<const char*>(&value), size);
         }
     }
+
+    std::bitset<V> read(std::bitset<K> address) {
+        auto it = data.find(address);
+        if (it != data.end()) {
+            return it->second;
+        }
+        else {
+            throw std::runtime_error("Address not found in memory: " + address.to_string());
+        }
+    }
 };
 
 #endif // FILE_HPP

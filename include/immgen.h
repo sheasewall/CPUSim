@@ -29,10 +29,6 @@ struct ImmGen {
 
     static std::bitset<32> generateLong(std::bitset<20> imm_val) {
         std::bitset<32> imm = 0;
-        imm.set(31, imm_val.test(19));
-        imm.set(30, imm_val.test(18));
-
-
         for (std::size_t i = 31; i >= 12; i--) {
             imm.set(i, imm_val.test(i - 12));
         }
