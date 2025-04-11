@@ -9,13 +9,6 @@ void ControlUnit::step() {
     cycles++;
 }
 
-void ControlUnit::dump()
-{
-    p_instruction_file->dump(pc);
-    p_reg_file->dump();
-    p_data_file->dump();
-}
-
 void ControlUnit::signature()
 {
     std::ofstream signature_file("DUT-rv32sim.signature");

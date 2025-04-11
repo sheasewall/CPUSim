@@ -15,7 +15,7 @@
 #include <sstream>
 
 class ControlUnit {
-private:
+protected:
     unsigned long cycles;
 
     std::bitset<32> pc;
@@ -43,7 +43,6 @@ public:
     void step();
 
     // For debugging
-    void dump();
     void signature();
 
 private:

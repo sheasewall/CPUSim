@@ -98,15 +98,15 @@ public:
 
 
 
-    void print(std::string prefix = "") {
-        for (auto& datum : data) {
-            std::cout << "Address " << std::setw(8) << std::setfill('0') << std::dec << datum.first.to_ulong() << ": " << std::setw(2) << std::setfill('0') << std::hex << datum.second.to_ulong() << std::endl;
-        }
-    }
+    // void print(std::string prefix = "") {
+    //     for (auto& datum : data) {
+    //         std::cout << "Address " << std::setw(8) << std::setfill('0') << std::dec << datum.first.to_ulong() << ": " << std::setw(2) << std::setfill('0') << std::hex << datum.second.to_ulong() << std::endl;
+    //     }
+    // }
 
-    void dump() { 
-        File::dump(1, "data");
-    }
+    // void dump(std::string filename = "data") { 
+    //     File::dump(1, filename);
+    // }
 
     std::string signature() {
         //read until 0x6f5ca309

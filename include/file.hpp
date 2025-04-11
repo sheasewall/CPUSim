@@ -10,6 +10,7 @@
 // Explicit include needed for compiling in Docker container
 #include <iomanip>
 #include <functional>
+#include <vector>
 
 template <unsigned int K, unsigned int V>
 class File {
@@ -51,6 +52,41 @@ public:
         }
     }
 
+    void load(std::string save_file) {
+        std::ifstream file(save_file, std::ios::binary);
+
+        if (!file.is_open()) {
+            throw std::runtime_error("Could not open memory file: " + memory_file);
+        }
+
+        std::vector<std::pair<std::bitset<K>, std::bitset<V>>> new_data;
+        u_int32_t address = 0;
+        char val;
+        while (file.read(reinterpret_cast<char*>(&val), 1)) {
+            try {
+                std::bitset<K> address_bitset = std::bitset<K>(address);
+                std::bitset<V> data_byte_bitset = std::bitset<V>(val);
+                new_data.insert({ address_bitset, data_byte_bitset });
+                address++;
+            }
+            catch (const std::invalid_argument& e) {
+                throw std::runtime_error("Invalid address or value at address: " + std::to_string(address));
+            }
+            catch (const std::out_of_range& e) {
+                throw std::runtime_error("Address or value out of range at address: " + std::to_string(address));
+            }
+        }
+
+        set_data(new_data);
+    }
+
+    void set_data(std::vector<std::pair<std::bitset<K>, std::bitset<V>>> new_data) {
+        data.clear();
+        for (auto& datum : new_data) {
+            data.insert(datum);
+        }
+    }
+
     void print(std::string prefix = "") {
         for (auto& datum : data) {
             std::cout << prefix << std::setw(K) << std::setfill(' ') << std::dec << datum.first.to_ulong() << ": " << std::setw(V) << std::setfill('0') << std::hex << datum.second.to_ulong() << std::endl;
@@ -62,7 +98,7 @@ public:
             filename = memory_file;
         }
 
-        std::ofstream file(filename + ".dump", std::ios::app);
+        std::ofstream file(filename, std::ios::app | std::ios::binary);
         if (!file.is_open()) {
             throw std::runtime_error("Could not open/create memory file: " + filename);
         }
@@ -71,12 +107,6 @@ public:
         for (auto& datum : data) {
             auto value = datum.second.to_ulong();
             file.write(reinterpret_cast<const char*>(&value), size);
-        }
-    }
-
-    void signature(std::string filename) {
-        for (auto& datum : data) {
-            std::cout << std::setw(V) << std::setfill('0') << std::hex << datum.second.to_ulong() << std::endl;
         }
     }
 };

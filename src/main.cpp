@@ -16,7 +16,6 @@ int main(int argc, char** argv)
         }
         catch (const EcallTrap& e) {
             // Exit on ecall
-            cu.dump();
             return 0;
         }
         catch (const EbreakTrap& e) {
@@ -27,12 +26,10 @@ int main(int argc, char** argv)
             // Save signature and dump state and exit on other exceptions
             std::cerr << "Error: " << e.what() << std::endl;
             cu.signature();
-            cu.dump();
             return 1;
         }
         catch (...) {
             std::cerr << "Unknown error occurred while executing instructions" << std::endl;
-            cu.dump();
             return 1;
         }
     }

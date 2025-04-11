@@ -28,28 +28,28 @@ public:
         return instruction;
     }
 
-    void print() {
-        for (int i = 0; i < data.size(); i += 4) {
-            // Collect the instruction bytes
-            std::bitset<32> instruction = 0;
-            for (int j = 0; j < 4; j++) {
-                std::bitset<8> instr_word = data.at(i + j);
-                instruction |= instr_word.to_ulong() << (j * 8);
-            }
-            std::cout << "Instruction " << std::setw(8) << std::setfill('0') << std::dec << i << ": " << std::setw(8) << std::setfill('0') << std::hex << instruction.to_ulong() << std::endl;
-        }
-    }
+    // void print() {
+    //     for (int i = 0; i < data.size(); i += 4) {
+    //         // Collect the instruction bytes
+    //         std::bitset<32> instruction = 0;
+    //         for (int j = 0; j < 4; j++) {
+    //             std::bitset<8> instr_word = data.at(i + j);
+    //             instruction |= instr_word.to_ulong() << (j * 8);
+    //         }
+    //         std::cout << "Instruction " << std::setw(8) << std::setfill('0') << std::dec << i << ": " << std::setw(8) << std::setfill('0') << std::hex << instruction.to_ulong() << std::endl;
+    //     }
+    // }
 
-    void dump() {
-        File::dump(1, "instr");
-    }
+    // void dump(std::string filename = "instr") {
+    //     File::dump(1, filename);
+    // }
 
-    void dump(std::bitset<32> pc) {
-        InstructionFile::dump();
-        std::ofstream dump_file("instr.dump", std::ios::app);
-        u_long value = pc.to_ulong();
-        dump_file.write(reinterpret_cast<const char*>(&value), 4);
-    }
+    // void dump(std::bitset<32> pc, std::string filename = "instr") {
+    //     InstructionFile::dump(filename);
+    //     std::ofstream dump_file(filename + ".dump", std::ios::app);
+    //     u_long value = pc.to_ulong();
+    //     dump_file.write(reinterpret_cast<const char*>(&value), 4);
+    // }
 };
 
 #endif // INSTRUCTIONFILE_H
