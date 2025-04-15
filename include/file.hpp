@@ -29,7 +29,6 @@ public:
         bool should_load = true;
         if (!file.is_open()) {
             should_load = false;
-            // throw std::runtime_error("Could not open memory file: " + memory_file);
         }
 
         if (should_load) {

@@ -221,7 +221,6 @@ namespace RISC
     void ShiftLeftLogi::execute(std::shared_ptr<ALU> p_alu, std::bitset<32>& pc)
     {
         // Select only the lower 5 bits as per RISC-V specs.
-        // Should technically be redundant and only a timesaver
         rs2_val = p_alu->hardwareRightShift(p_alu->hardwareLeftShift(rs2_val, std::bitset<32>(27)), std::bitset<32>(27));
         result = p_alu->hardwareLeftShift(rs1_val, rs2_val);
         RType::execute(p_alu, pc);
@@ -230,7 +229,6 @@ namespace RISC
     void ShiftRightLogi::execute(std::shared_ptr<ALU> p_alu, std::bitset<32>& pc)
     {
         // Select only the lower 5 bits as per RISC-V specs.
-        // Should technically be redundant and only a timesaver
         rs2_val = p_alu->hardwareRightShift(p_alu->hardwareLeftShift(rs2_val, std::bitset<32>(27)), std::bitset<32>(27));
         result = p_alu->hardwareRightShift(rs1_val, rs2_val);
         RType::execute(p_alu, pc);
@@ -239,7 +237,6 @@ namespace RISC
     void ShiftRightArith::execute(std::shared_ptr<ALU> p_alu, std::bitset<32>& pc)
     {
         // Select only the lower 5 bits as per RISC-V specs.
-        // Should technically be redundant and only a timesaver
         rs2_val = p_alu->hardwareRightShift(p_alu->hardwareLeftShift(rs2_val, std::bitset<32>(27)), std::bitset<32>(27));
         result = p_alu->arithmeticRightShift(rs1_val, rs2_val);
         RType::execute(p_alu, pc);
@@ -247,14 +244,12 @@ namespace RISC
 
     void SetLessThan::execute(std::shared_ptr<ALU> p_alu, std::bitset<32>& pc)
     {
-        // bool to bitset<32> implicit conversion
         result = p_alu->lessThanSigned(rs1_val, rs2_val);
         RType::execute(p_alu, pc);
     }
 
     void SetLessThanUnsigned::execute(std::shared_ptr<ALU> p_alu, std::bitset<32>& pc)
     {
-        // bool to bitset<32> implicit conversion
         result = p_alu->lessThanUnsigned(rs1_val, rs2_val);
         RType::execute(p_alu, pc);
     }

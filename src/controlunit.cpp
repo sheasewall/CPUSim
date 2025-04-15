@@ -245,7 +245,7 @@ void ControlUnit::decode() {
         break;
     }
     case 0b0001111: {
-        // FENCE
+        // Fence
         p_current_instruction = std::unique_ptr<RISC::Instruction>(new RISC::Fence(current_instruction));
         break;
     }

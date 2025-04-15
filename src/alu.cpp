@@ -152,7 +152,6 @@ std::bitset<32> ALU::arithmeticRightShift(std::bitset<32> val, std::bitset<32> s
 {
     std::bitset<32> shamt_upper_27 = hardwareRightShift(shamt, std::bitset<32>(5));
 
-    // I want to get rid of this logical not
     if (!hardwareIsEqual(shamt_upper_27, std::bitset<32>(0))) {
         return arithmeticRightShift(val, std::bitset<32>(31));
     }
