@@ -13,10 +13,7 @@ void ControlUnit::signature()
 {
     std::ofstream signature_file("DUT-rv32sim.signature");
     std::string signature = p_data_file->signature();
-    
-    // This whole thing is hacky and should be replaced with a better solution
-    // More importantly it should be moved out of CU as it does not 
-    // model any real functionality
+
     std::stringstream ss(signature);
     std::string line;
     int number_of_lines = 0;

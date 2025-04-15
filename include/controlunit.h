@@ -42,7 +42,7 @@ public:
 
     void step();
 
-    // For debugging
+    // For verification only
     void signature();
 
 private:

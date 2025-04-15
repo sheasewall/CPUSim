@@ -51,7 +51,7 @@ namespace RISC
         rd = std::bitset<5>(instr.substr(20, 5));
     }
 
-    void RISC::IType::decode(std::shared_ptr<RegisterFile> reg_file, std::shared_ptr<ImmGen> imm_gen)
+    void IType::decode(std::shared_ptr<RegisterFile> reg_file, std::shared_ptr<ImmGen> imm_gen)
     {
         std::pair<std::bitset<32>, std::bitset<32>> registers = reg_file->read(rs1, 0);
         rs1_val = registers.first;
@@ -63,7 +63,7 @@ namespace RISC
         pc = p_alu->add(pc, std::bitset<32>(4));
     }
 
-    void RISC::IType::writeBack(std::shared_ptr<RegisterFile> p_reg_file)
+    void IType::writeBack(std::shared_ptr<RegisterFile> p_reg_file)
     {
         p_reg_file->write(rd, result);
     }
@@ -112,7 +112,7 @@ namespace RISC
         imm = std::bitset<12>(imm3.to_string() + imm2.to_string() + imm1.to_string() + imm0.to_string());
     }
 
-    void RISC::BType::decode(std::shared_ptr<RegisterFile> p_reg_file, std::shared_ptr<ImmGen> p_imm_gen)
+    void BType::decode(std::shared_ptr<RegisterFile> p_reg_file, std::shared_ptr<ImmGen> p_imm_gen)
     {
         std::pair<std::bitset<32>, std::bitset<32>> registers = p_reg_file->read(rs1, rs2);
         rs1_val = registers.first;
@@ -134,12 +134,12 @@ namespace RISC
         rd = std::bitset<5>(instr.substr(20, 5));
     }
 
-    void RISC::UType::decode(std::shared_ptr<RegisterFile> p_reg_file, std::shared_ptr<ImmGen> p_imm_gen)
+    void UType::decode(std::shared_ptr<RegisterFile> p_reg_file, std::shared_ptr<ImmGen> p_imm_gen)
     {
         imm_val = p_imm_gen->generateLong(imm);
     }
 
-    void RISC::UType::writeBack(std::shared_ptr<RegisterFile> p_reg_file)
+    void UType::writeBack(std::shared_ptr<RegisterFile> p_reg_file)
     {
         p_reg_file->write(rd, result);
     }
@@ -158,7 +158,7 @@ namespace RISC
         imm = std::bitset<20>(imm3.to_string() + imm2.to_string() + imm1.to_string() + imm0.to_string());
     }
 
-    void RISC::JType::decode(std::shared_ptr<RegisterFile> p_reg_file, std::shared_ptr<ImmGen> p_imm_gen)
+    void JType::decode(std::shared_ptr<RegisterFile> p_reg_file, std::shared_ptr<ImmGen> p_imm_gen)
     {
         imm_val = p_imm_gen->signExtend(imm);
     }
@@ -170,7 +170,7 @@ namespace RISC
         pc = p_alu->add(pc, imm_val_shifted);
     }
 
-    void RISC::JType::writeBack(std::shared_ptr<RegisterFile> p_reg_file)
+    void JType::writeBack(std::shared_ptr<RegisterFile> p_reg_file)
     {
         p_reg_file->write(rd, result);
     }
@@ -334,17 +334,17 @@ namespace RISC
     // S instructions
     void SaveWord::accessMemory(std::shared_ptr<MemoryFile> p_data_file)
     {
-        p_data_file->writeWord(result, rs2_val);
+        p_data_file->writeBytes(result, rs2_val, 4);
     }
 
     void SaveHalfWord::accessMemory(std::shared_ptr<MemoryFile> p_data_file)
     {
-        p_data_file->writeHalfWord(result, rs2_val);
+        p_data_file->writeBytes(result, rs2_val, 2);
     }
 
     void SaveByte::accessMemory(std::shared_ptr<MemoryFile> p_data_file)
     {
-        p_data_file->writeByte(result, rs2_val);
+        p_data_file->writeBytes(result, rs2_val, 1);
     }
 
     // B instructions 
@@ -447,8 +447,7 @@ namespace RISC
 
     void LoadHalfWord::accessMemory(std::shared_ptr<MemoryFile> p_data_file)
     {
-        result = p_data_file->readBytes(result, 2);
-        result = p_data_file->signExtendHalfWordCircuit(result);
+        result = p_data_file->readBytes(result, 2, true);
     }
 
     void LoadByte::execute(std::shared_ptr<ALU> p_alu, std::bitset<32>& pc)
@@ -459,8 +458,7 @@ namespace RISC
 
     void LoadByte::accessMemory(std::shared_ptr<MemoryFile> p_data_file)
     {
-        result = p_data_file->readBytes(result, 1);
-        result = p_data_file->signExtendByteCircuit(result);
+        result = p_data_file->readBytes(result, 1, true);
     }
 
     void LoadUnsignedHalfWord::execute(std::shared_ptr<ALU> p_alu, std::bitset<32>& pc)
@@ -486,7 +484,7 @@ namespace RISC
     }
 
 
-    void RISC::Fence::execute(std::shared_ptr<ALU> p_alu, std::bitset<32>& pc)
+    void Fence::execute(std::shared_ptr<ALU> p_alu, std::bitset<32>& pc)
     {
         // No operation
         pc = p_alu->add(pc, std::bitset<32>(4));

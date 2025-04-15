@@ -89,13 +89,6 @@ namespace RISC {
         virtual void decode(std::shared_ptr<RegisterFile> p_reg_file, std::shared_ptr<ImmGen> p_imm_gen) override;
         virtual void execute(std::shared_ptr<ALU> p_alu, std::bitset<32>& pc) override;
         void accessMemory(std::shared_ptr<MemoryFile> p_data_file) override {}
-        // How do I want to write to memory? 
-        // Technically, depending on the width
-        // I need 1, 2, or 4 addresses
-        // I mean really I just need the 1 address
-        // and then to increment
-        // But it needs to rollover, so I need some 
-        // amount of logic overhead
     };
 
 
@@ -105,9 +98,6 @@ namespace RISC {
         std::bitset<3> funct3;
         std::bitset<5> rs1;
         std::bitset<5> rs2;
-        // This value represents a multiple of 2, meaning 
-        // it must be shifted left by 1 to get the actual value
-        // This will be done in the execute method
         std::bitset<12> imm;
 
         std::bitset<32> rs1_val;
@@ -145,9 +135,6 @@ namespace RISC {
     struct JType : Instruction
     {
         std::bitset<5> rd;
-        // This value represents a multiple of 2, meaning 
-        // it must be shifted left by 1 to get the actual value
-        // This will be done in the execute method
         std::bitset<20> imm;
 
         std::bitset<32> imm_val;

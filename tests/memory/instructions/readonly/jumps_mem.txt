@@ -1,5 +1,0 @@
-1 ADD 3 A 
-2 JUMP 5
-4 ADD -1 A 
-5 MOVE 1 B
-6 JUMP B

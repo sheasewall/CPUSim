@@ -25,16 +25,6 @@ public:
         }
         data.at(reg) = value;
     }
-
-    // void print() {
-    //     for (auto& datum : data) {
-    //         std::cout << "Register " << std::setw(2) << std::setfill(' ') << std::dec << datum.first.to_ulong() << ": " << std::setw(8) << std::setfill('0') << std::hex << datum.second.to_ulong() << std::endl;
-    //     }
-    // }
-
-    // void dump(std::string filename = "reg") {
-    //     File::dump(4, filename);
-    // }
 };
 
 #endif // REGISTERFILE_H
