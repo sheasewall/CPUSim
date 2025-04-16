@@ -8,10 +8,13 @@ int main(int argc, char** argv)
     }
 
     std::string bin_file = argv[1];
+    // std::string bin_file = "test.bin";
 
     ControlUnit cu(bin_file);
+    int cycles = 0;
     while (true) {
         try {
+            cycles++;
             cu.step();
         }
         catch (const EcallTrap& e) {
@@ -21,6 +24,8 @@ int main(int argc, char** argv)
         catch (const EbreakTrap& e) {
             // Save signature for debugging and continue on ebreak
             cu.signature();
+            cu.flush_pipeline();
+            std::cout << cycles << " cycles executed" << std::endl;
         }
         catch (const std::exception& e) {
             // Save signature and dump state and exit on other exceptions

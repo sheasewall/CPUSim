@@ -55,5 +55,5 @@ add_compile_definitions(MEMORY_FILES_DIR="${PROJECT_SOURCE_DIR}/tests/memory")
 add_compile_definitions(DATA_FILES_DIR="${PROJECT_SOURCE_DIR}/data")
 
 install(TARGETS rv32sim
-    DESTINATION /home/riscofuser/.local/bin
+    DESTINATION /usr/local/bin/
 )
