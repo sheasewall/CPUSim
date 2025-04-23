@@ -10,14 +10,21 @@
 #include "instructionfile.h"
 #include "exceptions.h"
 
-
 namespace RISC {
 /// RISC-V Types
+    enum Stage {
+        FETCH,
+        DECODE,
+        EXECUTE,
+        MEMORY_ACCESS,
+        WRITE_BACK
+    };
+
     struct Instruction
     {
         std::bitset<7> opcode;
+        Stage stage = FETCH;
 
-    public:
         virtual ~Instruction() {}
         virtual void decode(std::shared_ptr<RegisterFile> p_reg_file, std::shared_ptr<ImmGen> p_imm_gen) {}
         virtual void execute(std::shared_ptr<ALU> p_alu, std::bitset<32>& pc) {}

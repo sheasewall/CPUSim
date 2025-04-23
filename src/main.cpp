@@ -31,6 +31,8 @@ int main(int argc, char** argv)
             // Save signature and dump state and exit on other exceptions
             std::cerr << "Error: " << e.what() << std::endl;
             cu.signature();
+            std::cout << cycles << " cycles executed" << std::endl;
+
             return 1;
         }
         catch (...) {
