@@ -8,10 +8,10 @@ void ControlUnit::step() {
     std::shared_ptr<RISC::Instruction> p_to_memory_access = p_to_memory_access_next;
     std::shared_ptr<RISC::Instruction> p_to_write_back = p_to_write_back_next;
 
-    if (execute_resolved) {
+    if (!should_stall_for_execute) {
         to_decode = fetch(p_instruction_file, pc);
         p_to_decode_next = std::shared_ptr<RISC::Instruction>(new RISC::Instruction(to_decode)); // Notice how FETCH and EXECUTE both use pc
-        execute_resolved = false;
+        should_stall_for_execute = true;
     }
     else {
         p_to_decode_next = nullptr;
@@ -29,18 +29,13 @@ void ControlUnit::step() {
 
     if (p_to_memory_access) {
         memoryAccess(p_to_memory_access, p_data_file);
-        execute_resolved = true;
+        should_stall_for_execute = false;
     }
     p_to_write_back_next = p_to_memory_access;
 
     if (p_to_write_back) {
         writeBack(p_to_write_back, p_reg_file);
     }
-}
-
-void ControlUnit::flush_pipeline()
-{
-    p_current_instruction->stage = RISC::FETCH;
 }
 
 void ControlUnit::signature()

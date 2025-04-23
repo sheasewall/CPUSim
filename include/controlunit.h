@@ -22,7 +22,7 @@ protected:
     std::bitset<32> current_instruction;
     std::shared_ptr<RISC::Instruction> p_current_instruction;
 
-    bool execute_resolved = true;
+    bool should_stall_for_execute = false;
     std::shared_ptr<RISC::Instruction> p_to_decode_next;
     std::bitset<32> to_decode;
     std::shared_ptr<RISC::Instruction> p_to_execute_next;
@@ -55,8 +55,7 @@ public:
     ~ControlUnit() {}
 
     void step();
-    void flush_pipeline();
-
+    
     // For verification only
     void signature();
 
