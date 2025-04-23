@@ -24,6 +24,7 @@ protected:
 
     bool execute_resolved = true;
     std::shared_ptr<RISC::Instruction> p_to_decode_next;
+    std::bitset<32> to_decode;
     std::shared_ptr<RISC::Instruction> p_to_execute_next;
     std::shared_ptr<RISC::Instruction> p_to_memory_access_next;
     std::shared_ptr<RISC::Instruction> p_to_write_back_next;
@@ -40,10 +41,10 @@ public:
         pc = std::bitset<32>(0);
         p_current_instruction = std::make_shared<RISC::Instruction>(std::bitset<32>(0));
 
-        p_to_decode_next = std::make_shared<RISC::Instruction>(std::bitset<32>(0));
-        p_to_execute_next = std::make_shared<RISC::Instruction>(std::bitset<32>(0));
-        p_to_memory_access_next = std::make_shared<RISC::Instruction>(std::bitset<32>(0));
-        p_to_write_back_next = std::make_shared<RISC::Instruction>(std::bitset<32>(0));
+        p_to_decode_next = nullptr;
+        p_to_execute_next = nullptr;
+        p_to_memory_access_next = nullptr;
+        p_to_write_back_next = nullptr;
 
         p_instruction_file = std::make_shared<InstructionFile>(bin_file);
         p_imm_gen = std::make_shared<ImmGen>();

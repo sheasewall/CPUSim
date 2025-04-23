@@ -1,127 +1,41 @@
 #include "controlunit.h"
 
 void ControlUnit::step() {
-    // any two instructions attempting to take the same action are not allowed
-    // an instruction can fetch regardless of any other instruction
-    // an instruction can decode when all its registers are updated 
-    //      this means an instruction's dependent registers are not going to be
-    //       written to in the write back by any other instruction.
-    //          if there exists another instruction which will writeback
-    //           a relevant register, then we should await a value fowarded
-    //           when that instruction executes. 
-    // an instruction can execute regardless of any other instruction
-    //  unless its a jump? or maybe as long as no other instruction is a jump?
-    // ...mem access
-    // ...writeback
-    //
-    // remember that the model is that each piece of the pipeline uses resources which can
-    // only handle one thing at a time. So at each cycle, each resource can potentially be
-    // used. But these resources take time, so we tell each resource exactly what to do, set
-    // them off, then we wait
-    // then we come back when everything is finished, move the output of each resource
-    // into the input of the next, set them off, wait, 
-
     cycles++;
-    // std::shared_ptr<RISC::Instruction> temp_p_fetched_instruction = p_fetched_instruction;
-    // std::shared_ptr<RISC::Instruction> temp_p_decoded_instruction = std::make_shared<RISC::Instruction>(std::bitset<32>(0));
-    // std::shared_ptr<RISC::Instruction> temp_p_executed_instruction = std::make_shared<RISC::Instruction>(std::bitset<32>(0));
-    // std::shared_ptr<RISC::Instruction> temp_p_mem_accessed_instruction = std::make_shared<RISC::Instruction>(std::bitset<32>(0));
-    // std::shared_ptr<RISC::Instruction> temp_p_written_back_instruction = std::make_shared<RISC::Instruction>(std::bitset<32>(0));
-
-    // temp_p_fetched_instruction = p_current_instruction;
-
-    //how do c++ shared pointers work with derived classes?
-    // std::bitset<32> next_instruction = fetch(p_instruction_file, pc);
-    // std::shared_ptr<RISC::Instruction> decoded_instruction = std::make_shared<RISC::Instruction>();
-    // decode(decoded_instruction, next_instruction, p_reg_file, p_imm_gen);
-
-    /*
-    if (there is an instruction to be fetched [should be true unless end of program?] [needs to wait for current execute to be done ]) {
-        fetch it [asyncronously], hand it to the decoder for NEXT cycle
-    }
-
-    if (there is an instruction to be decoded) {
-        decode it [asyncronously], hand it to the executor for NEXT cycle
-    }
-
-    if (there is an instruction to be executed) {
-        execute it [asyncronously], hand it to the memory_access for NEXT cycle
-    }
-
-    if (there is an instruction that needs memory_access) {
-        give it access [asyncronously], hand it to the write_back for NEXT cycle
-    }
-
-    if (there is an instruction that needs to be written_back) {
-        write it back [asyncronously]
-    }
-    */
-
-    // if (there is an instruction to be fetched[should be true unless end of program ? ][needs to wait for current execute to be done]) {
-    //     fetch it[asyncronously], hand it to the decoder for NEXT cycle
-    // }
 
     std::shared_ptr<RISC::Instruction> p_to_decode = p_to_decode_next;
     std::shared_ptr<RISC::Instruction> p_to_execute = p_to_execute_next;
     std::shared_ptr<RISC::Instruction> p_to_memory_access = p_to_memory_access_next;
     std::shared_ptr<RISC::Instruction> p_to_write_back = p_to_write_back_next;
 
-
     if (execute_resolved) {
-        p_to_decode_next = std::shared_ptr<RISC::Instruction>(new RISC::Instruction(fetch(p_instruction_file, pc))); // Notice how FETCH and EXECUTE both use pc
+        to_decode = fetch(p_instruction_file, pc);
+        p_to_decode_next = std::shared_ptr<RISC::Instruction>(new RISC::Instruction(to_decode)); // Notice how FETCH and EXECUTE both use pc
+        execute_resolved = false;
     }
     else {
         p_to_decode_next = nullptr;
-        execute_resolved = false;
     }
 
     if (p_to_decode) {
-        decode(p_current_instruction, current_instruction, p_reg_file, p_imm_gen); // Notice how DECODE and WRITE_BACK both use reg_file
+        decode(p_to_decode, to_decode, p_reg_file, p_imm_gen); // Notice how DECODE and WRITE_BACK both use reg_file
     }
     p_to_execute_next = p_to_decode;
 
     if (p_to_execute) {
         execute(p_to_execute, p_alu, pc);
-        execute_resolved = true;
     }
     p_to_memory_access_next = p_to_execute;
 
     if (p_to_memory_access) {
         memoryAccess(p_to_memory_access, p_data_file);
+        execute_resolved = true;
     }
     p_to_write_back_next = p_to_memory_access;
 
     if (p_to_write_back) {
         writeBack(p_to_write_back, p_reg_file);
     }
-
-
-
-
-    // switch (p_current_instruction->stage) {
-    // case RISC::FETCH:
-    //     current_instruction = fetch(p_instruction_file, pc);
-    //     p_current_instruction->stage = RISC::DECODE;
-    //     break;
-    // case RISC::DECODE:
-    //     decode(p_current_instruction, current_instruction, p_reg_file, p_imm_gen); // Notice how DECODE and WRITE_BACK both use reg_file
-    //     p_current_instruction->stage = RISC::EXECUTE;
-    //     break;
-    // case RISC::EXECUTE:
-    //     execute(p_current_instruction, p_alu, pc);
-    //     p_current_instruction->stage = RISC::MEMORY_ACCESS;
-    //     break;
-    // case RISC::MEMORY_ACCESS:
-    //     memoryAccess(p_current_instruction, p_data_file);
-    //     p_current_instruction->stage = RISC::WRITE_BACK;
-    //     break;
-    // case RISC::WRITE_BACK:
-    //     writeBack(p_current_instruction, p_reg_file);
-    //     p_current_instruction->stage = RISC::FETCH;
-    //     break;
-    // default:
-    //     throw std::runtime_error("Unknown stage: " + std::to_string(p_current_instruction->stage));
-    // }
 }
 
 void ControlUnit::flush_pipeline()
