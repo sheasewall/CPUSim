@@ -22,9 +22,9 @@ namespace RISC
         rd = std::bitset<5>(instr.substr(20, 5));
     }
 
-    void RType::decode(std::shared_ptr<RegisterFile> reg_file, std::shared_ptr<ImmGen> imm_gen)
+    void RType::decode(std::shared_ptr<RegisterFile> p_reg_file, std::shared_ptr<ImmGen> imm_gen, std::shared_ptr<CSRFile> p_csr_file)
     {
-        std::pair<std::bitset<32>, std::bitset<32>> registers = reg_file->read(rs1, rs2);
+        std::pair<std::bitset<32>, std::bitset<32>> registers = p_reg_file->read(rs1, rs2);
         rs1_val = registers.first;
         rs2_val = registers.second;
     }
@@ -34,7 +34,7 @@ namespace RISC
         pc = p_alu->add(pc, std::bitset<32>(4));
     }
 
-    void RType::writeBack(std::shared_ptr<RegisterFile> p_reg_file)
+    void RType::writeBack(std::shared_ptr<RegisterFile> p_reg_file, std::shared_ptr<CSRFile> p_csr_file)
     {
         p_reg_file->write(rd, result);
     }
@@ -51,9 +51,9 @@ namespace RISC
         rd = std::bitset<5>(instr.substr(20, 5));
     }
 
-    void IType::decode(std::shared_ptr<RegisterFile> reg_file, std::shared_ptr<ImmGen> imm_gen)
+    void IType::decode(std::shared_ptr<RegisterFile> p_reg_file, std::shared_ptr<ImmGen> imm_gen, std::shared_ptr<CSRFile> p_csr_file)
     {
-        std::pair<std::bitset<32>, std::bitset<32>> registers = reg_file->read(rs1, 0);
+        std::pair<std::bitset<32>, std::bitset<32>> registers = p_reg_file->read(rs1, 0);
         rs1_val = registers.first;
         imm_val = imm_gen->signExtend(imm);
     }
@@ -63,7 +63,7 @@ namespace RISC
         pc = p_alu->add(pc, std::bitset<32>(4));
     }
 
-    void IType::writeBack(std::shared_ptr<RegisterFile> p_reg_file)
+    void IType::writeBack(std::shared_ptr<RegisterFile> p_reg_file, std::shared_ptr<CSRFile> p_csr_file)
     {
         p_reg_file->write(rd, result);
     }
@@ -82,7 +82,7 @@ namespace RISC
         imm = std::bitset<12>(imm1.to_string() + imm0.to_string());
     }
 
-    void SType::decode(std::shared_ptr<RegisterFile> p_reg_file, std::shared_ptr<ImmGen> p_imm_gen)
+    void SType::decode(std::shared_ptr<RegisterFile> p_reg_file, std::shared_ptr<ImmGen> p_imm_gen, std::shared_ptr<CSRFile> p_csr_file)
     {
         std::pair<std::bitset<32>, std::bitset<32>> registers = p_reg_file->read(rs1, rs2);
         rs1_val = registers.first;
@@ -112,7 +112,7 @@ namespace RISC
         imm = std::bitset<12>(imm3.to_string() + imm2.to_string() + imm1.to_string() + imm0.to_string());
     }
 
-    void BType::decode(std::shared_ptr<RegisterFile> p_reg_file, std::shared_ptr<ImmGen> p_imm_gen)
+    void BType::decode(std::shared_ptr<RegisterFile> p_reg_file, std::shared_ptr<ImmGen> p_imm_gen, std::shared_ptr<CSRFile> p_csr_file)
     {
         std::pair<std::bitset<32>, std::bitset<32>> registers = p_reg_file->read(rs1, rs2);
         rs1_val = registers.first;
@@ -134,12 +134,12 @@ namespace RISC
         rd = std::bitset<5>(instr.substr(20, 5));
     }
 
-    void UType::decode(std::shared_ptr<RegisterFile> p_reg_file, std::shared_ptr<ImmGen> p_imm_gen)
+    void UType::decode(std::shared_ptr<RegisterFile> p_reg_file, std::shared_ptr<ImmGen> p_imm_gen, std::shared_ptr<CSRFile> p_csr_file)
     {
         imm_val = p_imm_gen->generateLong(imm);
     }
 
-    void UType::writeBack(std::shared_ptr<RegisterFile> p_reg_file)
+    void UType::writeBack(std::shared_ptr<RegisterFile> p_reg_file, std::shared_ptr<CSRFile> p_csr_file)
     {
         p_reg_file->write(rd, result);
     }
@@ -158,7 +158,7 @@ namespace RISC
         imm = std::bitset<20>(imm3.to_string() + imm2.to_string() + imm1.to_string() + imm0.to_string());
     }
 
-    void JType::decode(std::shared_ptr<RegisterFile> p_reg_file, std::shared_ptr<ImmGen> p_imm_gen)
+    void JType::decode(std::shared_ptr<RegisterFile> p_reg_file, std::shared_ptr<ImmGen> p_imm_gen, std::shared_ptr<CSRFile> p_csr_file)
     {
         imm_val = p_imm_gen->signExtend(imm);
     }
@@ -170,9 +170,32 @@ namespace RISC
         pc = p_alu->add(pc, imm_val_shifted);
     }
 
-    void JType::writeBack(std::shared_ptr<RegisterFile> p_reg_file)
+    void JType::writeBack(std::shared_ptr<RegisterFile> p_reg_file, std::shared_ptr<CSRFile> p_csr_file)
     {
         p_reg_file->write(rd, result);
+    }
+
+    // CSRType
+    CSRType::CSRType(std::bitset<32> instruction) : Instruction(instruction)
+    {
+        std::string instr = instruction.to_string();
+
+        csr = std::bitset<12>(instr.substr(0, 12));
+        rs1 = std::bitset<5>(instr.substr(12, 5));
+        funct3 = std::bitset<3>(instr.substr(17, 3));
+        rd = std::bitset<5>(instr.substr(20, 5));
+    }
+
+    void CSRType::decode(std::shared_ptr<RegisterFile> p_reg_file, std::shared_ptr<ImmGen> p_imm_gen, std::shared_ptr<CSRFile> p_csr_file)
+    {
+        std::pair<std::bitset<32>, std::bitset<32>> registers = p_reg_file->read(rs1, 0);
+        rs1_val = registers.first;
+        csr_val = p_csr_file->read(csr);
+    }
+
+    void CSRType::execute(std::shared_ptr<ALU> p_alu, std::bitset<32>& pc)
+    {
+        pc = p_alu->add(pc, std::bitset<32>(4));
     }
 
     void JumpAndLinkReg::execute(std::shared_ptr<ALU> p_alu, std::bitset<32>& pc)
@@ -182,7 +205,7 @@ namespace RISC
         pc = offset;
     }
 
-    void JumpAndLinkReg::writeBack(std::shared_ptr<RegisterFile> p_reg_file)
+    void JumpAndLinkReg::writeBack(std::shared_ptr<RegisterFile> p_reg_file, std::shared_ptr<CSRFile> p_csr_file)
     {
         p_reg_file->write(rd, result);
     }
@@ -483,5 +506,161 @@ namespace RISC
     {
         // No operation
         pc = p_alu->add(pc, std::bitset<32>(4));
+    }
+
+
+    void CSRReadWrite::decode(std::shared_ptr<RegisterFile> p_reg_file, std::shared_ptr<ImmGen> p_imm_gen, std::shared_ptr<CSRFile> p_csr_file)
+    {
+        std::pair<std::bitset<32>, std::bitset<32>> registers = p_reg_file->read(rs1, 0);
+        rs1_val = registers.first;
+        if (rd == 0) {
+            // Do not read CSR if rd is x0
+            return;
+        }
+        // Reads and zero-extends
+        csr_val = p_csr_file->read(csr);
+    }
+
+    void CSRReadWrite::execute(std::shared_ptr<ALU> p_alu, std::bitset<32>& pc)
+    {
+        CSRType::execute(p_alu, pc);
+    }
+
+    void CSRReadWrite::writeBack(std::shared_ptr<RegisterFile> p_reg_file, std::shared_ptr<CSRFile> p_csr_file)
+    {
+        p_csr_file->write(csr, rs1_val);
+        if (rd == 0) { //this check may not be necessary
+            return;
+        }
+        p_reg_file->write(rd, csr_val);
+    }
+
+    void CSRReadSet::decode(std::shared_ptr<RegisterFile> p_reg_file, std::shared_ptr<ImmGen> p_imm_gen, std::shared_ptr<CSRFile> p_csr_file)
+    {
+        std::pair<std::bitset<32>, std::bitset<32>> registers = p_reg_file->read(rs1, 0);
+        rs1_val = registers.first;
+        // Reads and zero-extends
+        csr_val = p_csr_file->read(csr);
+    }
+
+    void CSRReadSet::execute(std::shared_ptr<ALU> p_alu, std::bitset<32>& pc)
+    {
+        // there is a caveat of "if that CSR bit is writable"
+        // this is not yet implemented
+        result = p_alu->bitwiseOr(csr_val, rs1_val);
+        CSRType::execute(p_alu, pc);
+    }
+
+    void CSRReadSet::writeBack(std::shared_ptr<RegisterFile> p_reg_file, std::shared_ptr<CSRFile> p_csr_file)
+    {
+        p_reg_file->write(rd, csr_val);
+        if (rs1 == 0) {
+            // Do not write to CSR file if rs1 is x0
+            return;
+        }
+        p_csr_file->write(csr, result);
+    }
+
+    void CSRReadClear::decode(std::shared_ptr<RegisterFile> p_reg_file, std::shared_ptr<ImmGen> p_imm_gen, std::shared_ptr<CSRFile> p_csr_file)
+    {
+        std::pair<std::bitset<32>, std::bitset<32>> registers = p_reg_file->read(rs1, 0);
+        rs1_val = registers.first;
+        // Reads and zero-extends
+        csr_val = p_csr_file->read(csr);
+    }
+
+    void CSRReadClear::execute(std::shared_ptr<ALU> p_alu, std::bitset<32>& pc)
+    {
+        // there is a caveat of "if that CSR bit is writable"
+        // this is not yet implemented
+        result = p_alu->bitwiseXor(csr_val, rs1_val);
+        CSRType::execute(p_alu, pc);
+    }
+
+    void CSRReadClear::writeBack(std::shared_ptr<RegisterFile> p_reg_file, std::shared_ptr<CSRFile> p_csr_file)
+    {
+        p_reg_file->write(rd, csr_val);
+        if (rs1 == 0) {
+            // Do not write to CSR file if rs1 is x0
+            return;
+        }
+        p_csr_file->write(csr, result);
+    }
+
+    //
+    void CSRReadWriteImm::decode(std::shared_ptr<RegisterFile> p_reg_file, std::shared_ptr<ImmGen> p_imm_gen, std::shared_ptr<CSRFile> p_csr_file)
+    {
+        // Zero extend
+        rs1_val = p_imm_gen->zeroExtend(rs1);
+        if (rd == 0) {
+            // Do not read CSR if rd is x0
+            return;
+        }
+        // Reads and zero-extends
+        csr_val = p_csr_file->read(csr);
+    }
+
+    void CSRReadWriteImm::execute(std::shared_ptr<ALU> p_alu, std::bitset<32>& pc)
+    {
+        CSRType::execute(p_alu, pc);
+    }
+
+    void CSRReadWriteImm::writeBack(std::shared_ptr<RegisterFile> p_reg_file, std::shared_ptr<CSRFile> p_csr_file)
+    {
+        p_csr_file->write(csr, rs1_val);
+        if (rd == 0) { //this check may not be necessary
+            return;
+        }
+        p_reg_file->write(rd, csr_val);
+    }
+
+    void CSRReadSetImm::decode(std::shared_ptr<RegisterFile> p_reg_file, std::shared_ptr<ImmGen> p_imm_gen, std::shared_ptr<CSRFile> p_csr_file)
+    {
+        rs1_val = p_imm_gen->zeroExtend(rs1);
+        // Reads and zero-extends
+        csr_val = p_csr_file->read(csr);
+    }
+
+    void CSRReadSetImm::execute(std::shared_ptr<ALU> p_alu, std::bitset<32>& pc)
+    {
+        // there is a caveat of "if that CSR bit is writable"
+        // this is not yet implemented
+        result = p_alu->bitwiseOr(csr_val, rs1_val);
+        CSRType::execute(p_alu, pc);
+    }
+
+    void CSRReadSetImm::writeBack(std::shared_ptr<RegisterFile> p_reg_file, std::shared_ptr<CSRFile> p_csr_file)
+    {
+        p_reg_file->write(rd, csr_val);
+        if (rs1 == 0) {
+            // Do not write to CSR file if rs1 is x0
+            return;
+        }
+        p_csr_file->write(csr, result);
+    }
+
+    void CSRReadClearImm::decode(std::shared_ptr<RegisterFile> p_reg_file, std::shared_ptr<ImmGen> p_imm_gen, std::shared_ptr<CSRFile> p_csr_file)
+    {
+        rs1_val = p_imm_gen->zeroExtend(rs1);
+        // Reads and zero-extends
+        csr_val = p_csr_file->read(csr);
+    }
+
+    void CSRReadClearImm::execute(std::shared_ptr<ALU> p_alu, std::bitset<32>& pc)
+    {
+        // there is a caveat of "if that CSR bit is writable"
+        // this is not yet implemented
+        result = p_alu->bitwiseXor(csr_val, rs1_val);
+        CSRType::execute(p_alu, pc);
+    }
+
+    void CSRReadClearImm::writeBack(std::shared_ptr<RegisterFile> p_reg_file, std::shared_ptr<CSRFile> p_csr_file)
+    {
+        p_reg_file->write(rd, csr_val);
+        if (rs1 == 0) {
+            // Do not write to CSR file if rs1 is x0
+            return;
+        }
+        p_csr_file->write(csr, result);
     }
 }

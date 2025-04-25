@@ -35,6 +35,10 @@ struct ImmGen {
 
         return imm;
     }
+
+    static std::bitset<32> zeroExtend(std::bitset<5> imm_val) {
+        return std::bitset<32>(imm_val.to_ulong());
+    }
 };
 
 #endif // IMMGEN_H
