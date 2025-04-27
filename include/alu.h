@@ -5,6 +5,8 @@
 #include <stdexcept>
 #include <bitset>
 
+#include "maskingunit.hpp"
+
 /**
  * @class ALU
  * @brief A class representing an Arithmetic Logic Unit (ALU) with various bitwise and arithmetic operations.

@@ -3,16 +3,14 @@
 namespace RISC
 {
     // RType
-    RType::RType(std::bitset<32> instruction)
+    void RType::fetch(std::bitset<32> instruction, std::shared_ptr<MaskingUnit> p_mu)
     {
-        std::string instr = instruction.to_string();
-
-        rs2 = std::bitset<5>(instr.substr(7, 5));
-        rs1 = std::bitset<5>(instr.substr(12, 5));
-        rd = std::bitset<5>(instr.substr(20, 5));
+        rs2 = p_mu->maskBits<5, 32>(instruction, 20, 5);
+        rs1 = p_mu->maskBits<5, 32>(instruction, 15, 5);
+        rd = p_mu->maskBits<5, 32>(instruction, 7, 5);
     }
 
-    void RType::decode(std::shared_ptr<RegisterFile> p_reg_file, std::shared_ptr<ImmGen> p_imm_gen)
+    void RType::decode(std::shared_ptr<RegisterFile> p_reg_file, std::shared_ptr<ImmGenUnit> p_igu)
     {
         std::pair<std::bitset<32>, std::bitset<32>> registers = p_reg_file->read(rs1, rs2);
         rs1_val = registers.first;
@@ -30,20 +28,18 @@ namespace RISC
     }
 
     // IType
-    IType::IType(std::bitset<32> instruction)
+    void IType::fetch(std::bitset<32> instruction, std::shared_ptr<MaskingUnit> p_mu)
     {
-        std::string instr = instruction.to_string();
-
-        imm = std::bitset<12>(instr.substr(0, 12));
-        rs1 = std::bitset<5>(instr.substr(12, 5));
-        rd = std::bitset<5>(instr.substr(20, 5));
+        rs1 = p_mu->maskBits<5, 32>(instruction, 15, 5);
+        rd = p_mu->maskBits<5, 32>(instruction, 7, 5);
+        imm = p_mu->maskBits<12, 32>(instruction, 20, 12);
     }
 
-    void IType::decode(std::shared_ptr<RegisterFile> p_reg_file, std::shared_ptr<ImmGen> p_imm_gen)
+    void IType::decode(std::shared_ptr<RegisterFile> p_reg_file, std::shared_ptr<ImmGenUnit> p_igu)
     {
         std::pair<std::bitset<32>, std::bitset<32>> registers = p_reg_file->read(rs1, 0);
         rs1_val = registers.first;
-        imm_val = p_imm_gen->signExtend(imm);
+        imm_val = p_igu->signExtend(imm);
     }
 
     void IType::execute(std::shared_ptr<ALU> p_alu, std::bitset<32>& pc)
@@ -57,24 +53,22 @@ namespace RISC
     }
 
     // SType
-    SType::SType(std::bitset<32> instruction)
+    void SType::fetch(std::bitset<32> instruction, std::shared_ptr<MaskingUnit> p_mu)
     {
-        std::string instr = instruction.to_string();
+        rs2 = p_mu->maskBits<5, 32>(instruction, 20, 5);
+        rs1 = p_mu->maskBits<5, 32>(instruction, 15, 5);
 
-        std::bitset<7> imm1 = std::bitset<7>(instr.substr(0, 7));
-        rs2 = std::bitset<5>(instr.substr(7, 5));
-        rs1 = std::bitset<5>(instr.substr(12, 5));
-        std::bitset<5> imm0 = std::bitset<5>(instr.substr(20, 5));
-
-        imm = std::bitset<12>(imm1.to_string() + imm0.to_string());
+        std::bitset<7> imm1 = p_mu->maskBits<7, 32>(instruction, 25, 7);
+        std::bitset<5> imm0 = p_mu->maskBits<5, 32>(instruction, 7, 5);
+        imm = p_mu->concatBits<5, 7>(imm0, imm1);
     }
 
-    void SType::decode(std::shared_ptr<RegisterFile> p_reg_file, std::shared_ptr<ImmGen> p_imm_gen)
+    void SType::decode(std::shared_ptr<RegisterFile> p_reg_file, std::shared_ptr<ImmGenUnit> p_igu)
     {
         std::pair<std::bitset<32>, std::bitset<32>> registers = p_reg_file->read(rs1, rs2);
         rs1_val = registers.first;
         rs2_val = registers.second;
-        imm_val = p_imm_gen->signExtend(imm);
+        imm_val = p_igu->signExtend(imm);
     }
 
     void SType::execute(std::shared_ptr<ALU> p_alu, std::bitset<32>& pc)
@@ -84,26 +78,26 @@ namespace RISC
     }
 
     // BType
-    BType::BType(std::bitset<32> instruction)
+    void BType::fetch(std::bitset<32> instruction, std::shared_ptr<MaskingUnit> p_mu)
     {
-        std::string instr = instruction.to_string();
+        rs2 = p_mu->maskBits<5, 32>(instruction, 20, 5);
+        rs1 = p_mu->maskBits<5, 32>(instruction, 15, 5);
 
-        std::bitset<1> imm3 = std::bitset<1>(instr.substr(0, 1));
-        std::bitset<6> imm1 = std::bitset<6>(instr.substr(1, 6));
-        rs2 = std::bitset<5>(instr.substr(7, 5));
-        rs1 = std::bitset<5>(instr.substr(12, 5));
-        std::bitset<4> imm0 = std::bitset<4>(instr.substr(20, 4));
-        std::bitset<1> imm2 = std::bitset<1>(instr.substr(24, 1));
-
-        imm = std::bitset<12>(imm3.to_string() + imm2.to_string() + imm1.to_string() + imm0.to_string());
+        std::bitset<1> imm3 = p_mu->maskBits<1, 32>(instruction, 31, 1);
+        std::bitset<6> imm1 = p_mu->maskBits<6, 32>(instruction, 25, 6);
+        std::bitset<4> imm0 = p_mu->maskBits<4, 32>(instruction, 8, 4);
+        std::bitset<1> imm2 = p_mu->maskBits<1, 32>(instruction, 7, 1);
+        std::bitset<10> low_bits = p_mu->concatBits<4, 6>(imm0, imm1);
+        std::bitset<2> high_bits = p_mu->concatBits<1, 1>(imm2, imm3);
+        imm = p_mu->concatBits<10, 2>(low_bits, high_bits);
     }
 
-    void BType::decode(std::shared_ptr<RegisterFile> p_reg_file, std::shared_ptr<ImmGen> p_imm_gen)
+    void BType::decode(std::shared_ptr<RegisterFile> p_reg_file, std::shared_ptr<ImmGenUnit> p_igu)
     {
         std::pair<std::bitset<32>, std::bitset<32>> registers = p_reg_file->read(rs1, rs2);
         rs1_val = registers.first;
         rs2_val = registers.second;
-        imm_val = p_imm_gen->signExtend(imm);
+        imm_val = p_igu->signExtend(imm);
     }
 
     void BType::execute(std::shared_ptr<ALU> p_alu, std::bitset<32>& pc)
@@ -112,17 +106,15 @@ namespace RISC
     }
 
     // UType
-    UType::UType(std::bitset<32> instruction)
+    void UType::fetch(std::bitset<32> instruction, std::shared_ptr<MaskingUnit> p_mu)
     {
-        std::string instr = instruction.to_string();
-
-        imm_long = std::bitset<20>(instr.substr(0, 20));
-        rd = std::bitset<5>(instr.substr(20, 5));
+        rd = p_mu->maskBits<5, 32>(instruction, 7, 5);
+        imm_long = p_mu->maskBits<20, 32>(instruction, 12, 20);
     }
 
-    void UType::decode(std::shared_ptr<RegisterFile> p_reg_file, std::shared_ptr<ImmGen> p_imm_gen)
+    void UType::decode(std::shared_ptr<RegisterFile> p_reg_file, std::shared_ptr<ImmGenUnit> p_igu)
     {
-        imm_val = p_imm_gen->generateLong(imm_long);
+        imm_val = p_igu->generateLong(imm_long);
     }
 
     void UType::writeBack(std::shared_ptr<RegisterFile> p_reg_file)
@@ -131,22 +123,22 @@ namespace RISC
     }
 
     // JType
-    JType::JType(std::bitset<32> instruction)
+    void JType::fetch(std::bitset<32> instruction, std::shared_ptr<MaskingUnit> p_mu)
     {
-        std::string instr = instruction.to_string();
+        rd = p_mu->maskBits<5, 32>(instruction, 7, 5);
 
-        std::bitset<1> imm3 = std::bitset<1>(instr.substr(0, 1));
-        std::bitset<10> imm0 = std::bitset<10>(instr.substr(1, 10));
-        std::bitset<1> imm1 = std::bitset<1>(instr.substr(11, 1));
-        std::bitset<8> imm2 = std::bitset<8>(instr.substr(12, 8));
-        rd = std::bitset<5>(instr.substr(20, 5));
-
-        imm_long = std::bitset<20>(imm3.to_string() + imm2.to_string() + imm1.to_string() + imm0.to_string());
+        std::bitset<1> imm3 = p_mu->maskBits<1, 32>(instruction, 31, 1);
+        std::bitset<10> imm0 = p_mu->maskBits<10, 32>(instruction, 21, 10);
+        std::bitset<1> imm1 = p_mu->maskBits<1, 32>(instruction, 20, 1);
+        std::bitset<8> imm2 = p_mu->maskBits<8, 32>(instruction, 12, 8);
+        std::bitset<11> low_bits = p_mu->concatBits<10, 1>(imm0, imm1);
+        std::bitset<9> high_bits = p_mu->concatBits<8, 1>(imm2, imm3);
+        imm_long = p_mu->concatBits<11, 9>(low_bits, high_bits);
     }
 
-    void JType::decode(std::shared_ptr<RegisterFile> p_reg_file, std::shared_ptr<ImmGen> p_imm_gen)
+    void JType::decode(std::shared_ptr<RegisterFile> p_reg_file, std::shared_ptr<ImmGenUnit> p_igu)
     {
-        imm_val = p_imm_gen->signExtend(imm_long);
+        imm_val = p_igu->signExtend(imm_long);
     }
 
     void JType::execute(std::shared_ptr<ALU> p_alu, std::bitset<32>& pc)
@@ -161,7 +153,7 @@ namespace RISC
         p_reg_file->write(rd, result);
     }
 
-    
+
 
     void JumpAndLinkReg::execute(std::shared_ptr<ALU> p_alu, std::bitset<32>& pc)
     {

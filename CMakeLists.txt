@@ -17,6 +17,7 @@ add_library(cpu_lib
 add_executable(rv32sim
     src/main.cpp
     include/file.hpp
+    include/maskingunit.hpp
 )
 target_link_libraries(rv32sim cpu_lib)
 
