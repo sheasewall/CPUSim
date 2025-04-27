@@ -6,7 +6,6 @@
 #include "alu.h"
 #include "immgen.h"
 #include "registerfile.h"
-#include "csrfile.h"
 #include "memoryfile.h"
 #include "instructionfile.h"
 #include "exceptions.h"
@@ -18,12 +17,26 @@ namespace RISC {
     {
         std::bitset<7> opcode;
 
+        std::bitset<7> funct7;
+        std::bitset<3> funct3;
+
+        std::bitset<5> rd;
+        std::bitset<5> rs1;
+        std::bitset<5> rs2;
+        std::bitset<12> imm;
+        std::bitset<20> imm_long;
+
+        std::bitset<32> rs1_val;
+        std::bitset<32> rs2_val;
+        std::bitset<32> imm_val;
+        std::bitset<32> result;
+
     public:
         virtual ~Instruction() {}
-        virtual void decode(std::shared_ptr<RegisterFile> p_reg_file, std::shared_ptr<ImmGen> p_imm_gen, std::shared_ptr<CSRFile> p_csr_file) {}
+        virtual void decode(std::shared_ptr<RegisterFile> p_reg_file, std::shared_ptr<ImmGen> p_imm_gen) {}
         virtual void execute(std::shared_ptr<ALU> p_alu, std::bitset<32>& pc) {}
         virtual void accessMemory(std::shared_ptr<MemoryFile> p_data_file) {}
-        virtual void writeBack(std::shared_ptr<RegisterFile> p_reg_file, std::shared_ptr<CSRFile> p_csr_file) {}
+        virtual void writeBack(std::shared_ptr<RegisterFile> p_reg_file) {}
 
         Instruction(std::bitset<32> instruction);
     };
@@ -32,62 +45,30 @@ namespace RISC {
     // Register-Register operation
     struct RType : Instruction
     {
-        std::bitset<7> funct7;
-        std::bitset<3> funct3;
-
-        std::bitset<5> rd;
-        std::bitset<5> rs1;
-        std::bitset<5> rs2;
-
-        std::bitset<32> rs1_val;
-        std::bitset<32> rs2_val;
-        std::bitset<32> result;
-
         RType(std::bitset<32> instruction);
 
-        virtual void decode(std::shared_ptr<RegisterFile> p_reg_file, std::shared_ptr<ImmGen> p_imm_gen, std::shared_ptr<CSRFile> p_csr_file) override;
+        virtual void decode(std::shared_ptr<RegisterFile> p_reg_file, std::shared_ptr<ImmGen> p_imm_gen) override;
         virtual void execute(std::shared_ptr<ALU> p_alu, std::bitset<32>& pc) override;
-        virtual void writeBack(std::shared_ptr<RegisterFile> p_reg_file, std::shared_ptr<CSRFile> p_csr_file) override;
+        virtual void writeBack(std::shared_ptr<RegisterFile> p_reg_file) override;
     };
 
 
     // Immediate operations
     struct IType : Instruction
     {
-        std::bitset<7> funct7;
-        std::bitset<3> funct3;
-        std::bitset<5> rd;
-        std::bitset<5> rs1;
-        std::bitset<12> imm;
-
-        std::bitset<32> rs1_val;
-        std::bitset<32> imm_val;
-        std::bitset<32> result;
-
         IType(std::bitset<32> instruction);
-        virtual void decode(std::shared_ptr<RegisterFile> p_reg_file, std::shared_ptr<ImmGen> p_imm_gen, std::shared_ptr<CSRFile> p_csr_file) override;
+        virtual void decode(std::shared_ptr<RegisterFile> p_reg_file, std::shared_ptr<ImmGen> p_imm_gen) override;
         virtual void execute(std::shared_ptr<ALU> p_alu, std::bitset<32>& pc) override;
-        virtual void writeBack(std::shared_ptr<RegisterFile> p_reg_file, std::shared_ptr<CSRFile> p_csr_file) override;
+        virtual void writeBack(std::shared_ptr<RegisterFile> p_reg_file) override;
     };
 
 
     // Store operations
     struct SType : Instruction
     {
-        std::bitset<3> funct3;
-        std::bitset<5> rs1;
-        std::bitset<5> rs2;
-        std::bitset<12> imm;
-
-        std::bitset<32> rs1_val;
-        std::bitset<32> rs2_val;
-        std::bitset<32> imm_val;
-
-        std::bitset<32> result;
-
         SType(std::bitset<32> instruction);
 
-        virtual void decode(std::shared_ptr<RegisterFile> p_reg_file, std::shared_ptr<ImmGen> p_imm_gen, std::shared_ptr<CSRFile> p_csr_file) override;
+        virtual void decode(std::shared_ptr<RegisterFile> p_reg_file, std::shared_ptr<ImmGen> p_imm_gen) override;
         virtual void execute(std::shared_ptr<ALU> p_alu, std::bitset<32>& pc) override;
         void accessMemory(std::shared_ptr<MemoryFile> p_data_file) override {}
     };
@@ -96,75 +77,32 @@ namespace RISC {
     // Branch operations
     struct BType : Instruction
     {
-        std::bitset<3> funct3;
-        std::bitset<5> rs1;
-        std::bitset<5> rs2;
-        std::bitset<12> imm;
-
-        std::bitset<32> rs1_val;
-        std::bitset<32> rs2_val;
-        std::bitset<32> imm_val;
-
-        std::bitset<32> result;
-
         BType(std::bitset<32> instruction);
 
-        virtual void decode(std::shared_ptr<RegisterFile> p_reg_file, std::shared_ptr<ImmGen> p_imm_gen, std::shared_ptr<CSRFile> p_csr_file) override;
+        virtual void decode(std::shared_ptr<RegisterFile> p_reg_file, std::shared_ptr<ImmGen> p_imm_gen) override;
         virtual void execute(std::shared_ptr<ALU> p_alu, std::bitset<32>& pc) override;
-        virtual void writeBack(std::shared_ptr<RegisterFile> p_reg_file, std::shared_ptr<CSRFile> p_csr_file) override {}
+        virtual void writeBack(std::shared_ptr<RegisterFile> p_reg_file) override {}
     };
 
 
     // Upper immediate operations
     struct UType : Instruction
     {
-        std::bitset<5> rd;
-        std::bitset<20> imm;
-
-        std::bitset<32> imm_val;
-
-        std::bitset<32> result;
-
         UType(std::bitset<32> instruction);
 
-        virtual void decode(std::shared_ptr<RegisterFile> p_reg_file, std::shared_ptr<ImmGen> p_imm_gen, std::shared_ptr<CSRFile> p_csr_file) override;
-        virtual void writeBack(std::shared_ptr<RegisterFile> p_reg_file, std::shared_ptr<CSRFile> p_csr_file) override;
+        virtual void decode(std::shared_ptr<RegisterFile> p_reg_file, std::shared_ptr<ImmGen> p_imm_gen) override;
+        virtual void writeBack(std::shared_ptr<RegisterFile> p_reg_file) override;
     };
 
 
     // Jump operations
     struct JType : Instruction
     {
-        std::bitset<5> rd;
-        std::bitset<20> imm;
-
-        std::bitset<32> imm_val;
-
-        std::bitset<32> result;
-
         JType(std::bitset<32> instruction);
 
-        virtual void decode(std::shared_ptr<RegisterFile> p_reg_file, std::shared_ptr<ImmGen> p_imm_gen, std::shared_ptr<CSRFile> p_csr_file) override;
+        virtual void decode(std::shared_ptr<RegisterFile> p_reg_file, std::shared_ptr<ImmGen> p_imm_gen) override;
         virtual void execute(std::shared_ptr<ALU> p_alu, std::bitset<32>& pc) override;
-        virtual void writeBack(std::shared_ptr<RegisterFile> p_reg_file, std::shared_ptr<CSRFile> p_csr_file) override;
-    };
-
-    struct CSRType : Instruction
-    { 
-        std::bitset<3> funct3;
-        std::bitset<5> rd;
-        std::bitset<5> rs1;
-        std::bitset<12> csr;
-
-        std::bitset<32> rs1_val;
-        std::bitset<32> csr_val;
-
-        std::bitset<32> result;
-
-        CSRType(std::bitset<32> instruction);
-
-        virtual void decode(std::shared_ptr<RegisterFile> p_reg_file, std::shared_ptr<ImmGen> p_imm_gen, std::shared_ptr<CSRFile> p_csr_file) override;
-        virtual void execute(std::shared_ptr<ALU> p_alu, std::bitset<32>& pc) override;
+        virtual void writeBack(std::shared_ptr<RegisterFile> p_reg_file) override;
     };
 
     // R instructions
@@ -448,7 +386,7 @@ namespace RISC {
         JumpAndLinkReg(IType instruction) : IType(instruction) {}
         JumpAndLinkReg(std::bitset<32> instruction) : IType(instruction) {}
         void execute(std::shared_ptr<ALU> p_alu, std::bitset<32>& pc) override;
-        void writeBack(std::shared_ptr<RegisterFile> p_reg_file, std::shared_ptr<CSRFile> p_csr_file) override;
+        void writeBack(std::shared_ptr<RegisterFile> p_reg_file) override;
     };
 
     // fence
@@ -456,49 +394,6 @@ namespace RISC {
     struct Fence : Instruction {
         Fence(std::bitset<32> instruction) : Instruction(instruction) {}
         void execute(std::shared_ptr<ALU> p_alu, std::bitset<32>& pc) override;
-    };
-
-    // CSR Instructions
-    struct CSRReadWrite : CSRType {
-        CSRReadWrite(CSRType instruction) : CSRType(instruction) {}
-        void decode(std::shared_ptr<RegisterFile> p_reg_file, std::shared_ptr<ImmGen> p_imm_gen, std::shared_ptr<CSRFile> p_csr_file) override;
-        void execute(std::shared_ptr<ALU> p_alu, std::bitset<32>& pc) override;
-        void writeBack(std::shared_ptr<RegisterFile> p_reg_file, std::shared_ptr<CSRFile> p_csr_file) override;
-    };
-
-    struct CSRReadSet : CSRType {
-        CSRReadSet(CSRType instruction) : CSRType(instruction) {}
-        void decode(std::shared_ptr<RegisterFile> p_reg_file, std::shared_ptr<ImmGen> p_imm_gen, std::shared_ptr<CSRFile> p_csr_file) override;
-        void execute(std::shared_ptr<ALU> p_alu, std::bitset<32>& pc) override;
-        void writeBack(std::shared_ptr<RegisterFile> p_reg_file, std::shared_ptr<CSRFile> p_csr_file) override;
-    };
-
-    struct CSRReadClear : CSRType {
-        CSRReadClear(CSRType instruction) : CSRType(instruction) {}
-        void decode(std::shared_ptr<RegisterFile> p_reg_file, std::shared_ptr<ImmGen> p_imm_gen, std::shared_ptr<CSRFile> p_csr_file) override;
-        void execute(std::shared_ptr<ALU> p_alu, std::bitset<32>& pc) override;
-        void writeBack(std::shared_ptr<RegisterFile> p_reg_file, std::shared_ptr<CSRFile> p_csr_file) override;
-    };
-
-    struct CSRReadWriteImm : CSRType {
-        CSRReadWriteImm(CSRType instruction) : CSRType(instruction) {}
-        void decode(std::shared_ptr<RegisterFile> p_reg_file, std::shared_ptr<ImmGen> p_imm_gen, std::shared_ptr<CSRFile> p_csr_file) override;
-        void execute(std::shared_ptr<ALU> p_alu, std::bitset<32>& pc) override;
-        void writeBack(std::shared_ptr<RegisterFile> p_reg_file, std::shared_ptr<CSRFile> p_csr_file) override;
-    };
-
-    struct CSRReadSetImm : CSRType {
-        CSRReadSetImm(CSRType instruction) : CSRType(instruction) {}
-        void decode(std::shared_ptr<RegisterFile> p_reg_file, std::shared_ptr<ImmGen> p_imm_gen, std::shared_ptr<CSRFile> p_csr_file) override;
-        void execute(std::shared_ptr<ALU> p_alu, std::bitset<32>& pc) override;
-        void writeBack(std::shared_ptr<RegisterFile> p_reg_file, std::shared_ptr<CSRFile> p_csr_file) override;
-    };
-
-    struct CSRReadClearImm : CSRType {
-        CSRReadClearImm(CSRType instruction) : CSRType(instruction) {}
-        void decode(std::shared_ptr<RegisterFile> p_reg_file, std::shared_ptr<ImmGen> p_imm_gen, std::shared_ptr<CSRFile> p_csr_file) override;
-        void execute(std::shared_ptr<ALU> p_alu, std::bitset<32>& pc) override;
-        void writeBack(std::shared_ptr<RegisterFile> p_reg_file, std::shared_ptr<CSRFile> p_csr_file) override;
     };
 }
 

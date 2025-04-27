@@ -240,30 +240,6 @@ void ControlUnit::decode() {
                 p_current_instruction = std::unique_ptr<RISC::Instruction>(new RISC::Ebreak(s_instruction));
             }
         }
-        else if (s_instruction.funct3 == 001) {
-            // CSR Read/Write
-            p_current_instruction = std::unique_ptr<RISC::Instruction>(new RISC::CSRReadWrite(current_instruction));
-        }
-        else if (s_instruction.funct3 == 010) {
-            // CSR Read/Set
-            p_current_instruction = std::unique_ptr<RISC::Instruction>(new RISC::CSRReadSet(current_instruction));
-        }
-        else if (s_instruction.funct3 == 011) {
-            // CSR Read/Clear
-            p_current_instruction = std::unique_ptr<RISC::Instruction>(new RISC::CSRReadClear(current_instruction));
-        }
-        else if (s_instruction.funct3 == 101) {
-            // CSR Read/Write Immediate
-            p_current_instruction = std::unique_ptr<RISC::Instruction>(new RISC::CSRReadWriteImm(current_instruction));
-        }
-        else if (s_instruction.funct3 == 110) {
-            // CSR Read/Set Immediate
-            p_current_instruction = std::unique_ptr<RISC::Instruction>(new RISC::CSRReadSetImm(current_instruction));
-        }
-        else if (s_instruction.funct3 == 111) {
-            // CSR Read/Clear Immediate
-            p_current_instruction = std::unique_ptr<RISC::Instruction>(new RISC::CSRReadClearImm(current_instruction));
-        }
         else {
             throw std::runtime_error("Unknown system instruction: " + current_instruction.to_string());
         }
@@ -278,7 +254,7 @@ void ControlUnit::decode() {
         throw std::runtime_error("Unknown opcode: " + generic_instruction.opcode.to_string());
     }
 
-    p_current_instruction->decode(p_reg_file, p_imm_gen, p_csr_file);
+    p_current_instruction->decode(p_reg_file, p_imm_gen);
 }
 
 void ControlUnit::execute() {
@@ -290,5 +266,5 @@ void ControlUnit::memoryAccess() {
 }
 
 void ControlUnit::writeBack() {
-    p_current_instruction->writeBack(p_reg_file, p_csr_file);
+    p_current_instruction->writeBack(p_reg_file);
 }

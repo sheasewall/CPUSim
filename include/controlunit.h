@@ -6,7 +6,6 @@
 #include "riscinstructions.h"
 #include "immgen.h"
 #include "registerfile.h"
-#include "csrfile.h"
 #include "memoryfile.h"
 #include "instructionfile.h"
 #include "exceptions.h"
@@ -29,8 +28,6 @@ protected:
     std::shared_ptr<ALU> p_alu;
     std::shared_ptr<MemoryFile> p_data_file;
 
-    std::shared_ptr<CSRFile> p_csr_file;
-
 public:
     ControlUnit(std::string bin_file) {
         cycles = 0;
@@ -38,7 +35,6 @@ public:
         p_instruction_file = std::make_shared<InstructionFile>(bin_file);
         p_imm_gen = std::make_shared<ImmGen>();
         p_reg_file = std::make_shared<RegisterFile>();
-        p_csr_file = std::make_shared<CSRFile>();
         p_alu = std::make_shared<ALU>();
         p_data_file = std::make_shared<MemoryFile>(bin_file);
     }

@@ -49,7 +49,7 @@ TEST(InstructionParsingTests, UTypes) {
     UType uType(instruction);
     EXPECT_EQ(uType.opcode, 0b0110111);
     EXPECT_EQ(uType.rd, 0b10110);
-    EXPECT_EQ(uType.imm, 0b01010101010101010101);
+    EXPECT_EQ(uType.imm_val, 0b01010101010101010101);
 }
 
 TEST(InstructionParsingTests, JTypes) {
@@ -57,7 +57,7 @@ TEST(InstructionParsingTests, JTypes) {
     JType jType(instruction);
     EXPECT_EQ(jType.opcode, 0b1101111);
     EXPECT_EQ(jType.rd, 0b01110);
-    EXPECT_EQ(jType.imm, 0b10011110010110110110);
+    EXPECT_EQ(jType.imm_val, 0b10011110010110110110);
 }
 
 int main(int argc, char **argv) {
