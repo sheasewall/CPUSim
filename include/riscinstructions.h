@@ -15,40 +15,45 @@ namespace RISC {
 /// RISC-V Types
     struct Instruction
     {
-        std::bitset<7> opcode;
+        // std::bitset<7> funct7;
+        // std::bitset<3> funct3;
 
-        std::bitset<7> funct7;
-        std::bitset<3> funct3;
+        // std::bitset<5> rd;
+        // std::bitset<5> rs1;
+        // std::bitset<5> rs2;
+        // std::bitset<12> imm;
+        // std::bitset<20> imm_long;
 
-        std::bitset<5> rd;
-        std::bitset<5> rs1;
-        std::bitset<5> rs2;
-        std::bitset<12> imm;
-        std::bitset<20> imm_long;
-
-        std::bitset<32> rs1_val;
-        std::bitset<32> rs2_val;
-        std::bitset<32> imm_val;
-        std::bitset<32> result;
+        // std::bitset<32> rs1_val;
+        // std::bitset<32> rs2_val;
+        // std::bitset<32> imm_val;
+        // std::bitset<32> result;
 
     public:
         virtual ~Instruction() {}
-        virtual void decode(std::shared_ptr<RegisterFile> p_reg_file, std::shared_ptr<ImmGen> p_imm_gen) {}
-        virtual void execute(std::shared_ptr<ALU> p_alu, std::bitset<32>& pc) {}
-        virtual void accessMemory(std::shared_ptr<MemoryFile> p_data_file) {}
-        virtual void writeBack(std::shared_ptr<RegisterFile> p_reg_file) {}
-
-        Instruction(std::bitset<32> instruction);
+        virtual void decode(std::shared_ptr<RegisterFile> p_reg_file, std::shared_ptr<ImmGen> p_imm_gen) = 0;
+        virtual void execute(std::shared_ptr<ALU> p_alu, std::bitset<32>& pc) = 0;
+        virtual void accessMemory(std::shared_ptr<MemoryFile> p_data_file) = 0;
+        virtual void writeBack(std::shared_ptr<RegisterFile> p_reg_file) = 0;
     };
 
 
     // Register-Register operation
     struct RType : Instruction
     {
+        std::bitset<5> rd;
+        std::bitset<5> rs1;
+        std::bitset<5> rs2;
+
+        std::bitset<32> rs1_val;
+        std::bitset<32> rs2_val;
+        std::bitset<32> result;
+
         RType(std::bitset<32> instruction);
 
         virtual void decode(std::shared_ptr<RegisterFile> p_reg_file, std::shared_ptr<ImmGen> p_imm_gen) override;
         virtual void execute(std::shared_ptr<ALU> p_alu, std::bitset<32>& pc) override;
+        void accessMemory(std::shared_ptr<MemoryFile> p_data_file) override {}
         virtual void writeBack(std::shared_ptr<RegisterFile> p_reg_file) override;
     };
 
@@ -56,9 +61,19 @@ namespace RISC {
     // Immediate operations
     struct IType : Instruction
     {
+        std::bitset<5> rd;
+        std::bitset<5> rs1;
+        std::bitset<12> imm;
+
+        std::bitset<32> rs1_val;
+        std::bitset<32> imm_val;
+        std::bitset<32> result;
+
         IType(std::bitset<32> instruction);
+
         virtual void decode(std::shared_ptr<RegisterFile> p_reg_file, std::shared_ptr<ImmGen> p_imm_gen) override;
         virtual void execute(std::shared_ptr<ALU> p_alu, std::bitset<32>& pc) override;
+        void accessMemory(std::shared_ptr<MemoryFile> p_data_file) override {}
         virtual void writeBack(std::shared_ptr<RegisterFile> p_reg_file) override;
     };
 
@@ -66,21 +81,43 @@ namespace RISC {
     // Store operations
     struct SType : Instruction
     {
+        std::bitset<5> rs1;
+        std::bitset<5> rs2;
+        std::bitset<12> imm;
+
+        std::bitset<32> rs1_val;
+        std::bitset<32> rs2_val;
+        std::bitset<32> imm_val;
+
+        std::bitset<32> result;
+
         SType(std::bitset<32> instruction);
 
         virtual void decode(std::shared_ptr<RegisterFile> p_reg_file, std::shared_ptr<ImmGen> p_imm_gen) override;
         virtual void execute(std::shared_ptr<ALU> p_alu, std::bitset<32>& pc) override;
         void accessMemory(std::shared_ptr<MemoryFile> p_data_file) override {}
+        void writeBack(std::shared_ptr<RegisterFile> p_reg_file) override {}
     };
 
 
     // Branch operations
     struct BType : Instruction
     {
+        std::bitset<5> rs1;
+        std::bitset<5> rs2;
+        std::bitset<12> imm;
+
+        std::bitset<32> rs1_val;
+        std::bitset<32> rs2_val;
+        std::bitset<32> imm_val;
+
+        std::bitset<32> result;
+
         BType(std::bitset<32> instruction);
 
         virtual void decode(std::shared_ptr<RegisterFile> p_reg_file, std::shared_ptr<ImmGen> p_imm_gen) override;
         virtual void execute(std::shared_ptr<ALU> p_alu, std::bitset<32>& pc) override;
+        void accessMemory(std::shared_ptr<MemoryFile> p_data_file) override {}
         virtual void writeBack(std::shared_ptr<RegisterFile> p_reg_file) override {}
     };
 
@@ -88,9 +125,18 @@ namespace RISC {
     // Upper immediate operations
     struct UType : Instruction
     {
+        std::bitset<5> rd;
+        std::bitset<20> imm_long;
+
+        std::bitset<32> imm_val;
+
+        std::bitset<32> result;
+
         UType(std::bitset<32> instruction);
 
         virtual void decode(std::shared_ptr<RegisterFile> p_reg_file, std::shared_ptr<ImmGen> p_imm_gen) override;
+        void execute(std::shared_ptr<ALU> p_alu, std::bitset<32>& pc) override {}
+        void accessMemory(std::shared_ptr<MemoryFile> p_data_file) override {}
         virtual void writeBack(std::shared_ptr<RegisterFile> p_reg_file) override;
     };
 
@@ -98,10 +144,18 @@ namespace RISC {
     // Jump operations
     struct JType : Instruction
     {
+        std::bitset<5> rd;
+        std::bitset<20> imm_long;
+
+        std::bitset<32> imm_val;
+
+        std::bitset<32> result;
+
         JType(std::bitset<32> instruction);
 
         virtual void decode(std::shared_ptr<RegisterFile> p_reg_file, std::shared_ptr<ImmGen> p_imm_gen) override;
         virtual void execute(std::shared_ptr<ALU> p_alu, std::bitset<32>& pc) override;
+        void accessMemory(std::shared_ptr<MemoryFile> p_data_file) override {}
         virtual void writeBack(std::shared_ptr<RegisterFile> p_reg_file) override;
     };
 
@@ -391,8 +445,8 @@ namespace RISC {
 
     // fence
     // this is currently a no op as our simulator is single hart
-    struct Fence : Instruction {
-        Fence(std::bitset<32> instruction) : Instruction(instruction) {}
+    struct Fence : IType {
+        Fence(std::bitset<32> instruction) : IType(instruction) {}
         void execute(std::shared_ptr<ALU> p_alu, std::bitset<32>& pc) override;
     };
 }

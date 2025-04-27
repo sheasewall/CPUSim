@@ -2,24 +2,14 @@
 
 namespace RISC
 {
-    Instruction::Instruction(std::bitset<32> instruction)
+    // RType
+    RType::RType(std::bitset<32> instruction)
     {
         std::string instr = instruction.to_string();
 
-        funct7 = std::bitset<7>(instr.substr(0, 7));
         rs2 = std::bitset<5>(instr.substr(7, 5));
         rs1 = std::bitset<5>(instr.substr(12, 5));
-        funct3 = std::bitset<3>(instr.substr(17, 3));
         rd = std::bitset<5>(instr.substr(20, 5));
-
-        opcode = std::bitset<7>(instr.substr(25, 7));
-    }
-
-
-    // RType
-    RType::RType(std::bitset<32> instruction) : Instruction(instruction)
-    {
-        
     }
 
     void RType::decode(std::shared_ptr<RegisterFile> p_reg_file, std::shared_ptr<ImmGen> p_imm_gen)
@@ -40,10 +30,13 @@ namespace RISC
     }
 
     // IType
-    IType::IType(std::bitset<32> instruction) : Instruction(instruction)
+    IType::IType(std::bitset<32> instruction)
     {
         std::string instr = instruction.to_string();
+
         imm = std::bitset<12>(instr.substr(0, 12));
+        rs1 = std::bitset<5>(instr.substr(12, 5));
+        rd = std::bitset<5>(instr.substr(20, 5));
     }
 
     void IType::decode(std::shared_ptr<RegisterFile> p_reg_file, std::shared_ptr<ImmGen> p_imm_gen)
@@ -64,11 +57,15 @@ namespace RISC
     }
 
     // SType
-    SType::SType(std::bitset<32> instruction) : Instruction(instruction)
+    SType::SType(std::bitset<32> instruction)
     {
         std::string instr = instruction.to_string();
+
         std::bitset<7> imm1 = std::bitset<7>(instr.substr(0, 7));
+        rs2 = std::bitset<5>(instr.substr(7, 5));
+        rs1 = std::bitset<5>(instr.substr(12, 5));
         std::bitset<5> imm0 = std::bitset<5>(instr.substr(20, 5));
+
         imm = std::bitset<12>(imm1.to_string() + imm0.to_string());
     }
 
@@ -87,13 +84,17 @@ namespace RISC
     }
 
     // BType
-    BType::BType(std::bitset<32> instruction) : Instruction(instruction)
+    BType::BType(std::bitset<32> instruction)
     {
         std::string instr = instruction.to_string();
+
         std::bitset<1> imm3 = std::bitset<1>(instr.substr(0, 1));
         std::bitset<6> imm1 = std::bitset<6>(instr.substr(1, 6));
+        rs2 = std::bitset<5>(instr.substr(7, 5));
+        rs1 = std::bitset<5>(instr.substr(12, 5));
         std::bitset<4> imm0 = std::bitset<4>(instr.substr(20, 4));
         std::bitset<1> imm2 = std::bitset<1>(instr.substr(24, 1));
+
         imm = std::bitset<12>(imm3.to_string() + imm2.to_string() + imm1.to_string() + imm0.to_string());
     }
 
@@ -111,10 +112,12 @@ namespace RISC
     }
 
     // UType
-    UType::UType(std::bitset<32> instruction) : Instruction(instruction)
+    UType::UType(std::bitset<32> instruction)
     {
         std::string instr = instruction.to_string();
+
         imm_long = std::bitset<20>(instr.substr(0, 20));
+        rd = std::bitset<5>(instr.substr(20, 5));
     }
 
     void UType::decode(std::shared_ptr<RegisterFile> p_reg_file, std::shared_ptr<ImmGen> p_imm_gen)
@@ -128,13 +131,16 @@ namespace RISC
     }
 
     // JType
-    JType::JType(std::bitset<32> instruction) : Instruction(instruction)
+    JType::JType(std::bitset<32> instruction)
     {
         std::string instr = instruction.to_string();
+
         std::bitset<1> imm3 = std::bitset<1>(instr.substr(0, 1));
         std::bitset<10> imm0 = std::bitset<10>(instr.substr(1, 10));
         std::bitset<1> imm1 = std::bitset<1>(instr.substr(11, 1));
         std::bitset<8> imm2 = std::bitset<8>(instr.substr(12, 8));
+        rd = std::bitset<5>(instr.substr(20, 5));
+
         imm_long = std::bitset<20>(imm3.to_string() + imm2.to_string() + imm1.to_string() + imm0.to_string());
     }
 
@@ -151,6 +157,20 @@ namespace RISC
     }
 
     void JType::writeBack(std::shared_ptr<RegisterFile> p_reg_file)
+    {
+        p_reg_file->write(rd, result);
+    }
+
+    
+
+    void JumpAndLinkReg::execute(std::shared_ptr<ALU> p_alu, std::bitset<32>& pc)
+    {
+        result = p_alu->add(pc, std::bitset<32>(4));
+        std::bitset<32> offset = p_alu->add(rs1_val, imm_val);
+        pc = offset;
+    }
+
+    void JumpAndLinkReg::writeBack(std::shared_ptr<RegisterFile> p_reg_file)
     {
         p_reg_file->write(rd, result);
     }
@@ -446,23 +466,9 @@ namespace RISC
         result = p_data_file->readBytes(result, 1);
     }
 
-    void JumpAndLinkReg::execute(std::shared_ptr<ALU> p_alu, std::bitset<32>& pc)
-    {
-        result = p_alu->add(pc, std::bitset<32>(4));
-        std::bitset<32> offset = p_alu->add(rs1_val, imm_val);
-        pc = offset;
-    }
-
-    void JumpAndLinkReg::writeBack(std::shared_ptr<RegisterFile> p_reg_file)
-    {
-        p_reg_file->write(rd, result);
-    }
-
     void Fence::execute(std::shared_ptr<ALU> p_alu, std::bitset<32>& pc)
     {
         // No operation
         pc = p_alu->add(pc, std::bitset<32>(4));
     }
-
-
 }

@@ -19,7 +19,6 @@ protected:
     unsigned long cycles;
 
     std::bitset<32> pc;
-    std::bitset<32> current_instruction;
     std::shared_ptr<RISC::Instruction> p_current_instruction;
 
     std::shared_ptr<InstructionFile> p_instruction_file;
@@ -51,6 +50,8 @@ private:
     void execute();
     void memoryAccess();
     void writeBack();
+
+    std::shared_ptr<RISC::Instruction> createInstruction(std::bitset<32> instruction);
 };
 
 #endif // CONTROLUNIT_H
