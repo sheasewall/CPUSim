@@ -10,6 +10,8 @@
 // Include for docker container compilation
 #include <cmath>
 
+// This is essentially a register file with 12 bit 
+// addresses instead of 5 bit. 
 class CSRFile : public File<12, 32> {
 public:
     CSRFile(std::string _memory_file = "csr") : File(_memory_file) {
