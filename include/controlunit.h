@@ -2,9 +2,11 @@
 #define CONTROLUNIT_H
 
 #include "alu.h"
+#include "constants.h"
 #include "exceptions.h"
 #include "immgenunit.h"
 #include "instructionfile.h"
+#include "maskingunit.hpp"
 #include "memoryfile.h"
 #include "registerfile.h"
 #include "riscinstructions.h"
@@ -12,8 +14,6 @@
 #include <iostream>
 #include <map>
 #include <sstream>
-
-#include "maskingunit.hpp"
 
 class ControlUnit {
 protected:
@@ -30,16 +30,7 @@ protected:
   std::shared_ptr<MemoryFile> p_data_file;
 
 public:
-  ControlUnit(std::string bin_file) {
-    cycles = 0;
-    pc = std::bitset<32>(0);
-    p_mu = std::make_shared<MaskingUnit>();
-    p_instruction_file = std::make_shared<InstructionFile>(bin_file);
-    p_igu = std::make_shared<ImmGenUnit>();
-    p_reg_file = std::make_shared<RegisterFile>();
-    p_alu = std::make_shared<ALU>();
-    p_data_file = std::make_shared<MemoryFile>(bin_file);
-  }
+  ControlUnit(std::string bin_file);
   ~ControlUnit() {}
 
   void step();

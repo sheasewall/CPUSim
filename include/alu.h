@@ -5,7 +5,7 @@
 #include <limits>
 #include <stdexcept>
 
-#include "maskingunit.hpp"
+#include "constants.h"
 
 /**
  * @class ALU
@@ -65,9 +65,7 @@ public:
    * @return The result of the NOR operation.
    */
   static std::bitset<32> hardwareNor(std::bitset<32> val1,
-                                     std::bitset<32> val2) {
-    return ~(val1 | val2);
-  }
+                                     std::bitset<32> val2);
 
   /**
    * @brief Performs a left shift operation on a 32-bit bitset.
@@ -76,9 +74,7 @@ public:
    * @return The result of the left shift operation.
    */
   static std::bitset<32> hardwareLeftShift(std::bitset<32> val,
-                                           std::bitset<32> shamt) {
-    return val << shamt.to_ulong();
-  }
+                                           std::bitset<32> shamt);
 
   /**
    * @brief Performs a right shift operation on a 32-bit bitset.
@@ -87,9 +83,7 @@ public:
    * @return The result of the right shift operation.
    */
   static std::bitset<32> hardwareRightShift(std::bitset<32> val,
-                                            std::bitset<32> shamt) {
-    return val >> shamt.to_ulong();
-  }
+                                            std::bitset<32> shamt);
 
   /**
    * @brief Checks if two 32-bit bitsets are equal.
@@ -97,9 +91,7 @@ public:
    * @param val2 The second 32-bit bitset.
    * @return True if the bitsets are equal, false otherwise.
    */
-  static bool hardwareIsEqual(std::bitset<32> val1, std::bitset<32> val2) {
-    return val1 == val2;
-  }
+  static bool hardwareIsEqual(std::bitset<32> val1, std::bitset<32> val2);
 
   /** @} */ // end of Hardware Operations
 
@@ -193,6 +185,8 @@ public:
 
   static std::bitset<32> arithmeticRightShift(std::bitset<32> val,
                                               std::bitset<32> shamt);
+
+  static std::bitset<32> maskLowFive(std::bitset<32> val);
 
   /** @} */ // end of Arithmetic Operations
 };

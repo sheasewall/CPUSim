@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.31)
-project(rv32sim VERSION 0.5.0 LANGUAGES CXX)
+project(rv32sim VERSION 0.6.0 LANGUAGES CXX)
 
 set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_CXX_STANDARD_REQUIRED True)
@@ -11,6 +11,10 @@ add_library(cpu_lib
     src/alu.cpp
     src/controlunit.cpp
     src/riscinstructions.cpp
+    src/immgenunit.cpp
+    src/instructionfile.cpp
+    src/memoryfile.cpp
+    src/registerfile.cpp
 )
 
 # Link the main executable with the library

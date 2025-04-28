@@ -2,6 +2,7 @@
 #define RISCIINSTRUCTIONS_H
 
 #include "alu.h"
+#include "constants.h"
 #include "exceptions.h"
 #include "immgenunit.h"
 #include "instructionfile.h"
@@ -12,7 +13,7 @@
 #include <memory>
 
 namespace RISC {
-struct Instruction {
+class Instruction {
 
 public:
   virtual ~Instruction() {}
@@ -31,7 +32,8 @@ public:
 =========================
 */
 
-struct RType : Instruction {
+class RType : public Instruction {
+public:
   std::bitset<5> rd;
   std::bitset<5> rs1;
   std::bitset<5> rs2;
@@ -46,57 +48,57 @@ struct RType : Instruction {
                       std::shared_ptr<ImmGenUnit> p_igu) override;
   virtual void execute(std::shared_ptr<ALU> p_alu,
                        std::bitset<32> &pc) override;
-  void accessMemory(std::shared_ptr<MemoryFile> p_data_file) override {}
+  virtual void accessMemory(std::shared_ptr<MemoryFile> p_data_file) override {}
   virtual void writeBack(std::shared_ptr<RegisterFile> p_reg_file) override;
 };
 
 // add rd,rs1,rs2
-struct Add : RType {
+class Add : public RType {
   void execute(std::shared_ptr<ALU> p_alu, std::bitset<32> &pc) override;
 };
 
 // sub rd,rs1,rs2
-struct Sub : RType {
+class Sub : public RType {
   void execute(std::shared_ptr<ALU> p_alu, std::bitset<32> &pc) override;
 };
 
 // xor rd,rs1,rs2
-struct Xor : RType {
+class Xor : public RType {
   void execute(std::shared_ptr<ALU> p_alu, std::bitset<32> &pc) override;
 };
 
 // or rd,rs1,rs2
-struct Or : RType {
+class Or : public RType {
   void execute(std::shared_ptr<ALU> p_alu, std::bitset<32> &pc) override;
 };
 
 // and rd,rs1,rs2
-struct And : RType {
+class And : public RType {
   void execute(std::shared_ptr<ALU> p_alu, std::bitset<32> &pc) override;
 };
 
 // sll rd,rs1,rs2
-struct ShiftLeftLogi : RType {
+class ShiftLeftLogi : public RType {
   void execute(std::shared_ptr<ALU> p_alu, std::bitset<32> &pc) override;
 };
 
 // srl rd,rs1,rs2
-struct ShiftRightLogi : RType {
+class ShiftRightLogi : public RType {
   void execute(std::shared_ptr<ALU> p_alu, std::bitset<32> &pc) override;
 };
 
 // sra rd,rs1,rs2
-struct ShiftRightArith : RType {
+class ShiftRightArith : public RType {
   void execute(std::shared_ptr<ALU> p_alu, std::bitset<32> &pc) override;
 };
 
 // slt rd,rs1,rs2
-struct SetLessThan : RType {
+class SetLessThan : public RType {
   void execute(std::shared_ptr<ALU> p_alu, std::bitset<32> &pc) override;
 };
 
 // sltu rd,rs1,rs2
-struct SetLessThanUnsigned : RType {
+class SetLessThanUnsigned : public RType {
   void execute(std::shared_ptr<ALU> p_alu, std::bitset<32> &pc) override;
 };
 
@@ -106,7 +108,8 @@ struct SetLessThanUnsigned : RType {
 =========================
 */
 
-struct IType : Instruction {
+class IType : public Instruction {
+public:
   std::bitset<5> rd;
   std::bitset<5> rs1;
   std::bitset<12> imm;
@@ -126,99 +129,99 @@ struct IType : Instruction {
 };
 
 // addi rd,rs1,imm
-struct AddImm : IType {
+class AddImm : public IType {
   void execute(std::shared_ptr<ALU> p_alu, std::bitset<32> &pc) override;
 };
 
 // xori rd,rs1,imm
-struct XorImm : IType {
+class XorImm : public IType {
   void execute(std::shared_ptr<ALU> p_alu, std::bitset<32> &pc) override;
 };
 
 // ori rd,rs1,imm
-struct OrImm : IType {
+class OrImm : public IType {
   void execute(std::shared_ptr<ALU> p_alu, std::bitset<32> &pc) override;
 };
 
 // andi rd,rs1,imm
-struct AndImm : IType {
+class AndImm : public IType {
   void execute(std::shared_ptr<ALU> p_alu, std::bitset<32> &pc) override;
 };
 
 // slli rd,rs1,imm
-struct ShiftLeftLogiImm : IType {
+class ShiftLeftLogiImm : public IType {
   void execute(std::shared_ptr<ALU> p_alu, std::bitset<32> &pc) override;
 };
 
 // srli rd,rs1,imm
-struct ShiftRightLogiImm : IType {
+class ShiftRightLogiImm : public IType {
   void execute(std::shared_ptr<ALU> p_alu, std::bitset<32> &pc) override;
 };
 
 // srai rd,rs1,imm
-struct ShiftRightArithImm : IType {
+class ShiftRightArithImm : public IType {
   void execute(std::shared_ptr<ALU> p_alu, std::bitset<32> &pc) override;
 };
 
 // slti rd,rs1,imm
-struct SetLessThanImm : IType {
+class SetLessThanImm : public IType {
   void execute(std::shared_ptr<ALU> p_alu, std::bitset<32> &pc) override;
 };
 
 // sltui rd,rs1,imm
-struct SetLessThanImmUnsigned : IType {
+class SetLessThanImmUnsigned : public IType {
   void execute(std::shared_ptr<ALU> p_alu, std::bitset<32> &pc) override;
 };
 
 // lw rd,offset(rs1)
-struct LoadWord : IType {
+class LoadWord : public IType {
   void execute(std::shared_ptr<ALU> p_alu, std::bitset<32> &pc) override;
   void accessMemory(std::shared_ptr<MemoryFile> p_data_file) override;
 };
 
 // lh rd,offset(rs1)
-struct LoadHalfWord : IType {
+class LoadHalfWord : public IType {
   void execute(std::shared_ptr<ALU> p_alu, std::bitset<32> &pc) override;
   void accessMemory(std::shared_ptr<MemoryFile> p_data_file) override;
 };
 
 // lb rd,offset(rs1)
-struct LoadByte : IType {
+class LoadByte : public IType {
   void execute(std::shared_ptr<ALU> p_alu, std::bitset<32> &pc) override;
   void accessMemory(std::shared_ptr<MemoryFile> p_data_file) override;
 };
 
 // lhu rd,offset(rs1)
-struct LoadUnsignedHalfWord : IType {
+class LoadUnsignedHalfWord : public IType {
   void execute(std::shared_ptr<ALU> p_alu, std::bitset<32> &pc) override;
   void accessMemory(std::shared_ptr<MemoryFile> p_data_file) override;
 };
 
 // lbu rd,offset(rs1)
-struct LoadUnsignedByte : IType {
+class LoadUnsignedByte : public IType {
   void execute(std::shared_ptr<ALU> p_alu, std::bitset<32> &pc) override;
   void accessMemory(std::shared_ptr<MemoryFile> p_data_file) override;
 };
 
 // jalr rd,offset
-struct JumpAndLinkReg : IType {
+class JumpAndLinkReg : public IType {
   void execute(std::shared_ptr<ALU> p_alu, std::bitset<32> &pc) override;
   void writeBack(std::shared_ptr<RegisterFile> p_reg_file) override;
 };
 
 // ecall
-struct Ecall : IType {
+class Ecall : public IType {
   void execute(std::shared_ptr<ALU> p_alu, std::bitset<32> &pc) override;
 };
 
 // ebreak
-struct Ebreak : IType {
+class Ebreak : public IType {
   void execute(std::shared_ptr<ALU> p_alu, std::bitset<32> &pc) override;
 };
 
 // fence
 // this is currently a no op as our simulator is single hart
-struct Fence : IType {
+class Fence : public IType {
   void execute(std::shared_ptr<ALU> p_alu, std::bitset<32> &pc) override;
 };
 
@@ -228,7 +231,8 @@ struct Fence : IType {
 =========================
 */
 
-struct SType : Instruction {
+class SType : public Instruction {
+public:
   std::bitset<5> rs1;
   std::bitset<5> rs2;
   std::bitset<12> imm;
@@ -250,17 +254,17 @@ struct SType : Instruction {
 };
 
 // sw rs2,offset(rs1)
-struct SaveWord : SType {
+class SaveWord : public SType {
   void accessMemory(std::shared_ptr<MemoryFile> p_data_file) override;
 };
 
 // sh rs2,offset(rs1)
-struct SaveHalfWord : SType {
+class SaveHalfWord : public SType {
   void accessMemory(std::shared_ptr<MemoryFile> p_data_file) override;
 };
 
 // sb rs2,offset(rs1)
-struct SaveByte : SType {
+class SaveByte : public SType {
   void accessMemory(std::shared_ptr<MemoryFile> p_data_file) override;
 };
 
@@ -270,7 +274,8 @@ struct SaveByte : SType {
 =========================
 */
 
-struct BType : Instruction {
+class BType : public Instruction {
+public:
   std::bitset<5> rs1;
   std::bitset<5> rs2;
   std::bitset<12> imm;
@@ -292,32 +297,32 @@ struct BType : Instruction {
 };
 
 // beq rs1,rs2,offset
-struct BranchEqual : BType {
+class BranchEqual : public BType {
   void execute(std::shared_ptr<ALU> p_alu, std::bitset<32> &pc) override;
 };
 
 // bne rs1,rs2,offset
-struct BranchNotEqual : BType {
+class BranchNotEqual : public BType {
   void execute(std::shared_ptr<ALU> p_alu, std::bitset<32> &pc) override;
 };
 
 // blt rs1,rs2,offset
-struct BranchLessThan : BType {
+class BranchLessThan : public BType {
   void execute(std::shared_ptr<ALU> p_alu, std::bitset<32> &pc) override;
 };
 
 // bltu rs1,rs2,offset
-struct BranchLessThanUnsigned : BType {
+class BranchLessThanUnsigned : public BType {
   void execute(std::shared_ptr<ALU> p_alu, std::bitset<32> &pc) override;
 };
 
 // bge rs1,rs2,offset
-struct BranchGreaterThanEqual : BType {
+class BranchGreaterThanEqual : public BType {
   void execute(std::shared_ptr<ALU> p_alu, std::bitset<32> &pc) override;
 };
 
 // bgeu rs1,rs2,offset
-struct BranchGreaterThanEqualUnsigned : BType {
+class BranchGreaterThanEqualUnsigned : public BType {
   void execute(std::shared_ptr<ALU> p_alu, std::bitset<32> &pc) override;
 };
 
@@ -327,7 +332,8 @@ struct BranchGreaterThanEqualUnsigned : BType {
 =========================
 */
 
-struct UType : Instruction {
+class UType : public Instruction {
+public:
   std::bitset<5> rd;
   std::bitset<20> imm_long;
 
@@ -345,12 +351,12 @@ struct UType : Instruction {
 };
 
 // lui rd,imm
-struct LoadUpperImmediate : UType {
+class LoadUpperImmediate : public UType {
   void execute(std::shared_ptr<ALU> p_alu, std::bitset<32> &pc) override;
 };
 
 // auipc rd,imm
-struct AddUpperImmedateToPC : UType {
+class AddUpperImmedateToPC : public UType {
   void execute(std::shared_ptr<ALU> p_alu, std::bitset<32> &pc) override;
 };
 
@@ -360,7 +366,8 @@ struct AddUpperImmedateToPC : UType {
 =========================
 */
 
-struct JType : Instruction {
+class JType : public Instruction {
+public:
   std::bitset<5> rd;
   std::bitset<20> imm_long;
 
@@ -379,7 +386,8 @@ struct JType : Instruction {
 };
 
 // jal rd,offset
-struct JumpAndLink : JType {};
+class JumpAndLink : public JType {};
+
 } // namespace RISC
 
 #endif // RISCIINSTRUCTIONS_H

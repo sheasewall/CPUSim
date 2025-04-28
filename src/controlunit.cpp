@@ -1,5 +1,16 @@
 #include "controlunit.h"
 
+ControlUnit::ControlUnit(std::string bin_file) {
+  cycles = 0;
+  pc = std::bitset<32>(0);
+  p_mu = std::make_shared<MaskingUnit>();
+  p_instruction_file = std::make_shared<InstructionFile>(bin_file);
+  p_igu = std::make_shared<ImmGenUnit>();
+  p_reg_file = std::make_shared<RegisterFile>();
+  p_alu = std::make_shared<ALU>();
+  p_data_file = std::make_shared<MemoryFile>(bin_file);
+}
+
 void ControlUnit::step() {
   fetch();
   decode();
@@ -27,9 +38,9 @@ void ControlUnit::writeBack() { p_current_instruction->writeBack(p_reg_file); }
 
 std::shared_ptr<RISC::Instruction>
 ControlUnit::createInstruction(std::bitset<32> instruction) {
-  std::bitset<7> opcode = p_mu->maskBits<7, 32>(instruction, 0, 7);
-  std::bitset<3> funct3 = p_mu->maskBits<3, 32>(instruction, 12, 3);
-  std::bitset<7> funct7 = p_mu->maskBits<7, 32>(instruction, 25, 7);
+  std::bitset<7> opcode = p_mu->hardwareMaskBits<7, 32>(instruction, 0, 7);
+  std::bitset<3> funct3 = p_mu->hardwareMaskBits<3, 32>(instruction, 12, 3);
+  std::bitset<7> funct7 = p_mu->hardwareMaskBits<7, 32>(instruction, 25, 7);
   std::shared_ptr<RISC::Instruction> p_instruction;
 
   switch (opcode.to_ulong()) {
@@ -161,7 +172,7 @@ ControlUnit::createInstruction(std::bitset<32> instruction) {
   }
   case 0b1110011: {
     // System (IType)
-    std::bitset<12> funct12 = p_mu->maskBits<12, 32>(instruction, 20, 12);
+    std::bitset<12> funct12 = p_mu->hardwareMaskBits<12, 32>(instruction, 20, 12);
     if (funct3 == 000) {
       if (funct12 == 0b000000000000) {
         // Ecall

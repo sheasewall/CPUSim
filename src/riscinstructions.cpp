@@ -9,21 +9,20 @@ namespace RISC {
 
 void RType::fetch(std::bitset<32> instruction,
                   std::shared_ptr<MaskingUnit> p_mu) {
-  rs2 = p_mu->maskBits<5, 32>(instruction, 20, 5);
-  rs1 = p_mu->maskBits<5, 32>(instruction, 15, 5);
-  rd = p_mu->maskBits<5, 32>(instruction, 7, 5);
+  rs2 = p_mu->hardwareMaskBits<5, 32>(instruction, 20, 5);
+  rs1 = p_mu->hardwareMaskBits<5, 32>(instruction, 15, 5);
+  rd = p_mu->hardwareMaskBits<5, 32>(instruction, 7, 5);
 }
 
 void RType::decode(std::shared_ptr<RegisterFile> p_reg_file,
                    std::shared_ptr<ImmGenUnit> p_igu) {
-  std::pair<std::bitset<32>, std::bitset<32>> registers =
-      p_reg_file->read(rs1, rs2);
+  auto registers = p_reg_file->read(rs1, rs2);
   rs1_val = registers.first;
   rs2_val = registers.second;
 }
 
 void RType::execute(std::shared_ptr<ALU> p_alu, std::bitset<32> &pc) {
-  pc = p_alu->add(pc, std::bitset<32>(4));
+  pc = p_alu->add(pc, FOUR);
 }
 
 void RType::writeBack(std::shared_ptr<RegisterFile> p_reg_file) {
@@ -57,28 +56,19 @@ void And::execute(std::shared_ptr<ALU> p_alu, std::bitset<32> &pc) {
 }
 
 void ShiftLeftLogi::execute(std::shared_ptr<ALU> p_alu, std::bitset<32> &pc) {
-  // Select only the lower 5 bits as per RISC-V specs.
-  rs2_val = p_alu->hardwareRightShift(
-      p_alu->hardwareLeftShift(rs2_val, std::bitset<32>(27)),
-      std::bitset<32>(27));
+  rs2_val = p_alu->maskLowFive(rs2_val);
   result = p_alu->hardwareLeftShift(rs1_val, rs2_val);
   RType::execute(p_alu, pc);
 }
 
 void ShiftRightLogi::execute(std::shared_ptr<ALU> p_alu, std::bitset<32> &pc) {
-  // Select only the lower 5 bits as per RISC-V specs.
-  rs2_val = p_alu->hardwareRightShift(
-      p_alu->hardwareLeftShift(rs2_val, std::bitset<32>(27)),
-      std::bitset<32>(27));
+  rs2_val = p_alu->maskLowFive(rs2_val);
   result = p_alu->hardwareRightShift(rs1_val, rs2_val);
   RType::execute(p_alu, pc);
 }
 
 void ShiftRightArith::execute(std::shared_ptr<ALU> p_alu, std::bitset<32> &pc) {
-  // Select only the lower 5 bits as per RISC-V specs.
-  rs2_val = p_alu->hardwareRightShift(
-      p_alu->hardwareLeftShift(rs2_val, std::bitset<32>(27)),
-      std::bitset<32>(27));
+  rs2_val = p_alu->maskLowFive(rs2_val);
   result = p_alu->arithmeticRightShift(rs1_val, rs2_val);
   RType::execute(p_alu, pc);
 }
@@ -102,21 +92,21 @@ void SetLessThanUnsigned::execute(std::shared_ptr<ALU> p_alu,
 
 void IType::fetch(std::bitset<32> instruction,
                   std::shared_ptr<MaskingUnit> p_mu) {
-  rs1 = p_mu->maskBits<5, 32>(instruction, 15, 5);
-  rd = p_mu->maskBits<5, 32>(instruction, 7, 5);
-  imm = p_mu->maskBits<12, 32>(instruction, 20, 12);
+  rs1 = p_mu->hardwareMaskBits<5, 32>(instruction, 15, 5);
+  rd = p_mu->hardwareMaskBits<5, 32>(instruction, 7, 5);
+  imm = p_mu->hardwareMaskBits<12, 32>(instruction, 20, 12);
 }
 
 void IType::decode(std::shared_ptr<RegisterFile> p_reg_file,
                    std::shared_ptr<ImmGenUnit> p_igu) {
   std::pair<std::bitset<32>, std::bitset<32>> registers =
-      p_reg_file->read(rs1, 0);
+      p_reg_file->read(rs1, REG_ZERO);
   rs1_val = registers.first;
   imm_val = p_igu->signExtend(imm);
 }
 
 void IType::execute(std::shared_ptr<ALU> p_alu, std::bitset<32> &pc) {
-  pc = p_alu->add(pc, std::bitset<32>(4));
+  pc = p_alu->add(pc, FOUR);
 }
 
 void IType::writeBack(std::shared_ptr<RegisterFile> p_reg_file) {
@@ -145,31 +135,19 @@ void AndImm::execute(std::shared_ptr<ALU> p_alu, std::bitset<32> &pc) {
 
 void ShiftLeftLogiImm::execute(std::shared_ptr<ALU> p_alu,
                                std::bitset<32> &pc) {
-  // Select only the lower 5 bits as per RISC-V specs.
-  // Not redundant, as upper 7 bits are used as a funct7
-  imm_val = p_alu->hardwareRightShift(
-      p_alu->hardwareLeftShift(imm_val, std::bitset<32>(27)),
-      std::bitset<32>(27));
+  imm_val = p_alu->maskLowFive(imm_val);
   result = p_alu->hardwareLeftShift(rs1_val, imm_val);
   IType::execute(p_alu, pc);
 }
 void ShiftRightLogiImm::execute(std::shared_ptr<ALU> p_alu,
                                 std::bitset<32> &pc) {
-  // Select only the lower 5 bits as per RISC-V specs.
-  // Not redundant, as upper 7 bits are used as a funct7
-  imm_val = p_alu->hardwareRightShift(
-      p_alu->hardwareLeftShift(imm_val, std::bitset<32>(27)),
-      std::bitset<32>(27));
+  imm_val = p_alu->maskLowFive(imm_val);
   result = p_alu->hardwareRightShift(rs1_val, imm_val);
   IType::execute(p_alu, pc);
 }
 void ShiftRightArithImm::execute(std::shared_ptr<ALU> p_alu,
                                  std::bitset<32> &pc) {
-  // Select only the lower 5 bits as per RISC-V specs.
-  // Not redundant, as upper 7 bits are used as a funct7
-  imm_val = p_alu->hardwareRightShift(
-      p_alu->hardwareLeftShift(imm_val, std::bitset<32>(27)),
-      std::bitset<32>(27));
+  imm_val = p_alu->maskLowFive(imm_val);
   result = p_alu->arithmeticRightShift(rs1_val, imm_val);
   IType::execute(p_alu, pc);
 }
@@ -234,13 +212,27 @@ void LoadUnsignedByte::accessMemory(std::shared_ptr<MemoryFile> p_data_file) {
 }
 
 void JumpAndLinkReg::execute(std::shared_ptr<ALU> p_alu, std::bitset<32> &pc) {
-  result = p_alu->add(pc, std::bitset<32>(4));
+  result = p_alu->add(pc, FOUR);
   std::bitset<32> offset = p_alu->add(rs1_val, imm_val);
   pc = offset;
 }
 
 void JumpAndLinkReg::writeBack(std::shared_ptr<RegisterFile> p_reg_file) {
   p_reg_file->write(rd, result);
+}
+
+void Ecall::execute(std::shared_ptr<ALU> p_alu, std::bitset<32> &pc) {
+  throw EcallTrap();
+}
+
+void Ebreak::execute(std::shared_ptr<ALU> p_alu, std::bitset<32> &pc) {
+  IType::execute(p_alu, pc);
+  throw EbreakTrap();
+}
+
+void Fence::execute(std::shared_ptr<ALU> p_alu, std::bitset<32> &pc) {
+  // No operation
+  pc = p_alu->add(pc, FOUR);
 }
 
 /*
@@ -251,11 +243,11 @@ void JumpAndLinkReg::writeBack(std::shared_ptr<RegisterFile> p_reg_file) {
 
 void SType::fetch(std::bitset<32> instruction,
                   std::shared_ptr<MaskingUnit> p_mu) {
-  rs2 = p_mu->maskBits<5, 32>(instruction, 20, 5);
-  rs1 = p_mu->maskBits<5, 32>(instruction, 15, 5);
+  rs2 = p_mu->hardwareMaskBits<5, 32>(instruction, 20, 5);
+  rs1 = p_mu->hardwareMaskBits<5, 32>(instruction, 15, 5);
 
-  std::bitset<7> imm1 = p_mu->maskBits<7, 32>(instruction, 25, 7);
-  std::bitset<5> imm0 = p_mu->maskBits<5, 32>(instruction, 7, 5);
+  std::bitset<7> imm1 = p_mu->hardwareMaskBits<7, 32>(instruction, 25, 7);
+  std::bitset<5> imm0 = p_mu->hardwareMaskBits<5, 32>(instruction, 7, 5);
   imm = p_mu->concatBits<5, 7>(imm0, imm1);
 }
 
@@ -270,7 +262,7 @@ void SType::decode(std::shared_ptr<RegisterFile> p_reg_file,
 
 void SType::execute(std::shared_ptr<ALU> p_alu, std::bitset<32> &pc) {
   result = p_alu->add(rs1_val, imm_val);
-  pc = p_alu->add(pc, std::bitset<32>(4));
+  pc = p_alu->add(pc, FOUR);
 }
 
 void SaveWord::accessMemory(std::shared_ptr<MemoryFile> p_data_file) {
@@ -293,13 +285,13 @@ void SaveByte::accessMemory(std::shared_ptr<MemoryFile> p_data_file) {
 
 void BType::fetch(std::bitset<32> instruction,
                   std::shared_ptr<MaskingUnit> p_mu) {
-  rs2 = p_mu->maskBits<5, 32>(instruction, 20, 5);
-  rs1 = p_mu->maskBits<5, 32>(instruction, 15, 5);
+  rs2 = p_mu->hardwareMaskBits<5, 32>(instruction, 20, 5);
+  rs1 = p_mu->hardwareMaskBits<5, 32>(instruction, 15, 5);
 
-  std::bitset<1> imm3 = p_mu->maskBits<1, 32>(instruction, 31, 1);
-  std::bitset<6> imm1 = p_mu->maskBits<6, 32>(instruction, 25, 6);
-  std::bitset<4> imm0 = p_mu->maskBits<4, 32>(instruction, 8, 4);
-  std::bitset<1> imm2 = p_mu->maskBits<1, 32>(instruction, 7, 1);
+  std::bitset<1> imm3 = p_mu->hardwareMaskBits<1, 32>(instruction, 31, 1);
+  std::bitset<6> imm1 = p_mu->hardwareMaskBits<6, 32>(instruction, 25, 6);
+  std::bitset<4> imm0 = p_mu->hardwareMaskBits<4, 32>(instruction, 8, 4);
+  std::bitset<1> imm2 = p_mu->hardwareMaskBits<1, 32>(instruction, 7, 1);
   std::bitset<10> low_bits = p_mu->concatBits<4, 6>(imm0, imm1);
   std::bitset<2> high_bits = p_mu->concatBits<1, 1>(imm2, imm3);
   imm = p_mu->concatBits<10, 2>(low_bits, high_bits);
@@ -315,7 +307,7 @@ void BType::decode(std::shared_ptr<RegisterFile> p_reg_file,
 }
 
 void BType::execute(std::shared_ptr<ALU> p_alu, std::bitset<32> &pc) {
-  imm_val = p_alu->hardwareLeftShift(imm_val, std::bitset<32>(1));
+  imm_val = p_alu->hardwareLeftShift(imm_val, ONE);
 }
 
 void BranchEqual::execute(std::shared_ptr<ALU> p_alu, std::bitset<32> &pc) {
@@ -323,7 +315,7 @@ void BranchEqual::execute(std::shared_ptr<ALU> p_alu, std::bitset<32> &pc) {
   if (p_alu->hardwareIsEqual(rs1_val, rs2_val)) {
     pc = p_alu->add(pc, imm_val);
   } else {
-    pc = p_alu->add(pc, std::bitset<32>(4));
+    pc = p_alu->add(pc, FOUR);
   }
 }
 
@@ -332,7 +324,7 @@ void BranchNotEqual::execute(std::shared_ptr<ALU> p_alu, std::bitset<32> &pc) {
   if (!p_alu->hardwareIsEqual(rs1_val, rs2_val)) {
     pc = p_alu->add(pc, imm_val);
   } else {
-    pc = p_alu->add(pc, std::bitset<32>(4));
+    pc = p_alu->add(pc, FOUR);
   }
 }
 
@@ -341,7 +333,7 @@ void BranchLessThan::execute(std::shared_ptr<ALU> p_alu, std::bitset<32> &pc) {
   if (p_alu->lessThanSigned(rs1_val, rs2_val)) {
     pc = p_alu->add(pc, imm_val);
   } else {
-    pc = p_alu->add(pc, std::bitset<32>(4));
+    pc = p_alu->add(pc, FOUR);
   }
 }
 
@@ -351,7 +343,7 @@ void BranchLessThanUnsigned::execute(std::shared_ptr<ALU> p_alu,
   if (p_alu->lessThanUnsigned(rs1_val, rs2_val)) {
     pc = p_alu->add(pc, imm_val);
   } else {
-    pc = p_alu->add(pc, std::bitset<32>(4));
+    pc = p_alu->add(pc, FOUR);
   }
 }
 
@@ -361,7 +353,7 @@ void BranchGreaterThanEqual::execute(std::shared_ptr<ALU> p_alu,
   if (p_alu->greaterThanEqualSigned(rs2_val, rs1_val)) {
     pc = p_alu->add(pc, imm_val);
   } else {
-    pc = p_alu->add(pc, std::bitset<32>(4));
+    pc = p_alu->add(pc, FOUR);
   }
 }
 
@@ -371,7 +363,7 @@ void BranchGreaterThanEqualUnsigned::execute(std::shared_ptr<ALU> p_alu,
   if (p_alu->greaterThanEqualUnsigned(rs2_val, rs1_val)) {
     pc = p_alu->add(pc, imm_val);
   } else {
-    pc = p_alu->add(pc, std::bitset<32>(4));
+    pc = p_alu->add(pc, FOUR);
   }
 }
 
@@ -383,8 +375,8 @@ void BranchGreaterThanEqualUnsigned::execute(std::shared_ptr<ALU> p_alu,
 
 void UType::fetch(std::bitset<32> instruction,
                   std::shared_ptr<MaskingUnit> p_mu) {
-  rd = p_mu->maskBits<5, 32>(instruction, 7, 5);
-  imm_long = p_mu->maskBits<20, 32>(instruction, 12, 20);
+  rd = p_mu->hardwareMaskBits<5, 32>(instruction, 7, 5);
+  imm_long = p_mu->hardwareMaskBits<20, 32>(instruction, 12, 20);
 }
 
 void UType::decode(std::shared_ptr<RegisterFile> p_reg_file,
@@ -399,13 +391,13 @@ void UType::writeBack(std::shared_ptr<RegisterFile> p_reg_file) {
 void LoadUpperImmediate::execute(std::shared_ptr<ALU> p_alu,
                                  std::bitset<32> &pc) {
   result = imm_val;
-  pc = p_alu->add(pc, std::bitset<32>(4));
+  pc = p_alu->add(pc, FOUR);
 }
 
 void AddUpperImmedateToPC::execute(std::shared_ptr<ALU> p_alu,
                                    std::bitset<32> &pc) {
   result = p_alu->add(pc, imm_val);
-  pc = p_alu->add(pc, std::bitset<32>(4));
+  pc = p_alu->add(pc, FOUR);
 }
 
 /*
@@ -416,12 +408,12 @@ void AddUpperImmedateToPC::execute(std::shared_ptr<ALU> p_alu,
 
 void JType::fetch(std::bitset<32> instruction,
                   std::shared_ptr<MaskingUnit> p_mu) {
-  rd = p_mu->maskBits<5, 32>(instruction, 7, 5);
+  rd = p_mu->hardwareMaskBits<5, 32>(instruction, 7, 5);
 
-  std::bitset<1> imm3 = p_mu->maskBits<1, 32>(instruction, 31, 1);
-  std::bitset<10> imm0 = p_mu->maskBits<10, 32>(instruction, 21, 10);
-  std::bitset<1> imm1 = p_mu->maskBits<1, 32>(instruction, 20, 1);
-  std::bitset<8> imm2 = p_mu->maskBits<8, 32>(instruction, 12, 8);
+  std::bitset<1> imm3 = p_mu->hardwareMaskBits<1, 32>(instruction, 31, 1);
+  std::bitset<10> imm0 = p_mu->hardwareMaskBits<10, 32>(instruction, 21, 10);
+  std::bitset<1> imm1 = p_mu->hardwareMaskBits<1, 32>(instruction, 20, 1);
+  std::bitset<8> imm2 = p_mu->hardwareMaskBits<8, 32>(instruction, 12, 8);
   std::bitset<11> low_bits = p_mu->concatBits<10, 1>(imm0, imm1);
   std::bitset<9> high_bits = p_mu->concatBits<8, 1>(imm2, imm3);
   imm_long = p_mu->concatBits<11, 9>(low_bits, high_bits);
@@ -433,7 +425,7 @@ void JType::decode(std::shared_ptr<RegisterFile> p_reg_file,
 }
 
 void JType::execute(std::shared_ptr<ALU> p_alu, std::bitset<32> &pc) {
-  result = p_alu->add(pc, std::bitset<32>(4));
+  result = p_alu->add(pc, FOUR);
   std::bitset<32> imm_val_shifted = p_alu->add(imm_val, imm_val);
   pc = p_alu->add(pc, imm_val_shifted);
 }
@@ -442,23 +434,4 @@ void JType::writeBack(std::shared_ptr<RegisterFile> p_reg_file) {
   p_reg_file->write(rd, result);
 }
 
-/*
-=========================
-   Misc. Instructions
-=========================
-*/
-
-void Ecall::execute(std::shared_ptr<ALU> p_alu, std::bitset<32> &pc) {
-  throw EcallTrap();
-}
-
-void Ebreak::execute(std::shared_ptr<ALU> p_alu, std::bitset<32> &pc) {
-  IType::execute(p_alu, pc);
-  throw EbreakTrap();
-}
-
-void Fence::execute(std::shared_ptr<ALU> p_alu, std::bitset<32> &pc) {
-  // No operation
-  pc = p_alu->add(pc, std::bitset<32>(4));
-}
 } // namespace RISC
